@@ -1,0 +1,102 @@
+# German language file (Deutsch)
+# All of these messages can be customised to your heart's content
+# If you've translated this file into any other language you can send me a pm on DevBukkit with the file if you want it to become content of the plugin
+# Message format: <id>=<message>
+
+# Command messages
+command_no_permission=&cDu hast keine Berechtigung für dieses Kommando!
+command_no_console_executor=&cDieses Kommando kann nicht von der Konsole ausgeführt werden!
+# Arena messages
+arena_existent=&cDiese Arena existiert bereits!
+arena_not_existent=&cDiese Arena existiert nicht!
+arena_created=&aDu hast erfolgreich Arena &6<arena> &aerstellt.
+arena_removed=&aDu hast Arena &6<arena> &aentfernt.
+arena_selected=&5Du hast Arena &6<arena> &5ausgewählt.
+arena_floor_set=&aDu hast die Floor Koordinaten von Arena &6<arena> &agesetzt.
+arena_protection_set=&aDu hast die Protection Koordinaten von Arena &6<arena> &agesetzt.
+arena_spawn_existent=&cDieser Spawn existiert bereits!
+arena_spawn_not_existent=&cDieser Spawn existiert nicht!
+arena_too_many_spawns=&cDu kannst nicht mehr als 16 Spawns für eine einzelne Arena hinzufügen!
+arena_too_few_spawns=&cArenas müssen mindestends &e2 &cSpawns haben!
+arena_spawn_added=&aDer Spawn &b<spawn> &awurde zu Arena &6<arena> &ahinzugefügt.
+arena_spawn_deleted=&aDer Spawn &b<spawn> &awurde von Arena &6<arena> &aentfernt.
+arena_checklist=&9Setup Checkliste für Arena &6<arena>&9: <checklist>
+arena_ready_for_use=&2Diese Arena ist bereit für die Benutzung! Bitte gib &6/pw edit [arena] &2ein um das Setup fertigzustellen.
+arena_not_ready_for_use=&cDiese Arena ist noch nicht bereit für die Benutzung! Bitte gib &6/pw check [arena] &cein und checke dein Setup.
+arena_already_setup=&cDas Setup dieser Arena wurde bereits abgeschlossen und sie ist nicht mehr im editier Modus!
+arena_not_setup=&cDas Setup dieser Arena ist noch nicht fertig!
+arena_toggle_edit_mode=&aDer editier Modus der Arena &6<arena> &awurde <state>geschalten&a.
+arena_not_in_edit_mode=&cDu kannst das nicht tun, weil die Arena nicht im editier Modus ist!
+arena_list=&6Liste von Arenas: <arenas>
+arena_full=&cEs tut uns leid, aber diese Arena ist leider voll!
+arena_game_already_started=&cDas Spiel in dieser Arena wurde schon gestartet!
+arena_game_not_started=&cDas Spiel in dieser Arena wurde noch nicht gestartet!
+arena_already_joined=&cDu bist bereits einer Arena beigetreten!
+arena_not_joined=&cDu bist noch keiner Arena beigetreten!
+arena_joined=&bDu bist Arena &6<arena> &bbeigetreten. <player_display>
+arena_joined_other=&8<player> &7ist der Arena &6<arena> &7beigetreten. <player_display>
+arena_left=&4Du hast Arena &6<arena> &4verlassen. <player_display>
+arena_left_other=&8<player> &chat Arena &6<arena> &cverlassen. <player_display>
+arena_ready=&aDu wurdest als bereit markiert!
+arena_ready_other=&8<player> &9ist nun bereit in Arena &6<arena>&9.
+arena_already_ready=&cDu bist bereits als bereit markiert!
+arena_countdown=&6&lSpiel startet in &e&l<time> &6&lsekunden!
+arena_countdown_go=&6&lLOOO&c&lOOOO&4&lOOS!!!
+arena_countdown_stopped=&cDer Countdown wurde gestoppt, da nun zu wenig Spieler in der Arena sind!
+arena_powerup_got=&c<player> &7bekam das &8<powerup> &7Powerup!
+arena_powerup_end=&7Der Effekt von &c<player>'s &8<powerup> &7Powerup verschwand.
+arena_player_won_game=&2<player> &ahat das Spiel in Arena &6<arena> &agewonnen!
+arena_game_overview=&3Spiel Übersicht für Arena &6<arena>&3: <overview>
+arena_forced_stop=&cDas Spiel in der Arena &6<arena> &cwurde zum stoppen gezwungen!
+arena_can_not_start=&cDiese Arena kann nicht gestartet werden, weil zu wenig Spieler beigetreten sind!
+arena_game_started=&aDu hast das Spiel in Arena &6<arena> &agestartet.
+arena_game_started_other=&6Das Spiel wurde von &c<player> &6gestartet.
+arena_game_stopped=&7Du hast das Spiel in Arena &6<arena> &7gestoppt.
+arena_game_stopped_other=&7Das Spiel wurde von &c<player> &6gestoppt.
+arena_action_not_allowed=&cDu hast nicht die Befugnis &4<action> &cin der Arena!
+arena_disabled=&8Du wurdest aus dieser Arena teleportiert, weil sie deaktiviert wurde!
+# Stats messages below
+stats_not_found=&cEs wurden keine Statistiken für <player> gefunden!
+stats=&9<player>'s&3 Statistiken: <stats>
+no_top_ten=&cEs gibt noch keine Top 10!
+top_ten=&7Top &c10 &7Liste der Kategorie &a<category>&7: <top>
+# Player messages
+player_not_enough_space=&cDu hast nicht genug Platz im Inventar für dieses Item!
+player_got_wand=&aDu hast der Gerät bekommen, schau dir seine Beschreibung an für eine Benutzungsanleitung!
+player_position_set=&b<position> Position wurde zu &6<location> &bgesetzt.
+player_too_few_positions=&cDu hast noch keine &e2 &cPositionen gesetzt!
+player_list=&aListe von Spieler die in Arena &6<arena> &asind: <players>;<player_display>
+player_inventory_not_empty=&cDein Inventar ist nicht leer!
+player_not_existent=&cDieser Spieler existiert nicht!
+player_not_joined_arena=&cDieser Spieler ist keiner Arena beigetreten!
+player_kicked=&aDu hast &e<player> &aaus der Arena &6<arena> &ageschmissen.
+player_kicked_other=&4Du wurdest aus Arena &6<arena> &4von &e<player> &4geschmissen!
+# Help page messages
+help_page_invalid_number=&cDie eingegebene Zahl ist ungültig, bitte gib eine normale Zahl ein!
+help_page_header=&7&oKommandoliste von PaintWar &c&o<version>&7&o:
+help_page_not_existent=&cDiese Hilfeseite existiert nicht!
+# Sign messages
+sign_no_create_permission=&cDu hast keine Berechtigung ein Arenaschild zu erstellen!
+sign_no_break_permission=&cDu hast keine Berechtigung ein Arenaschild zu zerstören!
+sign_no_arena_found=&cEs wurde kein gültiger Arenaname auf diesem Schild gefunden!
+sign_created=&aDu hast erfolgreich ein Arenaschild mit der Id &6<id> &aerstellt.
+sign_removed=&aDu hast das Arenaschild mit der Id &6<id> &aentfernt.
+sign_list=&bListe von Arenaschildern: <signs>
+sign_not_exitent=&cDieses Arenaschild existiert nicht!
+sign_teleport=&7&oTeleportiere zu Arenaschild mit der Id &c&o<id>&7&o...
+# Reload messages
+reload_config=&7&oDie Config wurde neu geladen.
+reload_plugin=&7&oPaintWar wurde neu geladen.
+# Miscellanious message parts
+state_on=an
+state_off=aus
+action_use_command=&cdas Kommando &6<command> zu benutzen
+action_place_liquids=Flüssigkeiten zu platzieren
+action_break_blocks=Blöcke zu zerstören
+action_place_blocks=Blöcke zu platzieren
+action_ignite_blocks=Blöcke anzuzünden
+category_won_games=Gewonnene Spiele
+category_lost_games=Verlorene Spiele
+category_wl=G/V Verhältnis
+position_first=Erste
+position_second=Zweite

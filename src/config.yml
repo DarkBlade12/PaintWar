@@ -1,0 +1,57 @@
+# |\ \--------------PaintWar-----------/ /|
+# |/ /                                 \ \|
+# |\ \               Config            / /|
+# |/ /                                 \ \|
+# |\ \---------------------------------/ /|
+
+# List of general settings
+General_Settings:
+ 
+ # This is the ending of the language file that will be loaded
+ # PaintWar will attempt to load 'lang_<name>.yml'
+ # Built-in names are 'EN' for English and 'DE' for German
+ Language_Name: EN
+ 
+# List of general settings for arenas
+Arena_Settings:
+ 
+ # List of various broadcast settings
+ Broadcast_Settings:
+ 
+  # Determines if it will be broadcasted when a player joins an arena
+  Player_Join: true
+  
+  # Determines if it will be broadcasted when a player leaves an arena
+  Player_Leave: true
+  
+  # Determines if it will be broadcasted when a player wins a game
+  Player_Win_Game: true
+ 
+ # List of settings for the automatic kick system
+ Auto_Kick:
+ 
+  # Determines if the automatic kick system will be enabled
+  Enabled: true
+  
+  # This is the time in seconds after which a player will be kicked for idling when in an arena
+  Time: 45
+ 
+ # List of settings for a Bonus
+ Bonus:
+  
+  # Determines if the chosen Powerup will be distributed to all players who have the permission 'PaintWar.bonus' after the specified delay after a game in an arena started
+  Enabled: false
+  
+  # This is the delay in seconds of the bonus distribution after a game in an arena started
+  Delay: 10
+  
+  # This is the powerup that will be distributed to players who have the permission 'PaintWar.bonus' after a specified delay after a game in an arena started
+  Powerup: Dash
+
+# List of settings for the arena signs
+Arena_Sign_Settings:
+
+ # This is the default arena sign id, which will be used for arena sign id generation
+ # <num> is a placeholder for a randomly generated number
+ # <num> will be automatically inserted if this string doesn't contain it
+ Default_Sign_Id: as<num>

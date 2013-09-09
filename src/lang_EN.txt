@@ -1,0 +1,102 @@
+# English language file (English)
+# All of these messages can be customised to your heart's content
+# If you've translated this file into any other language you can send me a pm on DevBukkit with the file if you want it to become content of the plugin
+# Message format: <id>=<message>
+
+# Command messages
+command_no_permission=&cYou don't have permission for this command!
+command_no_console_executor=&cThis command can't be executed as console!
+# Arena messages
+arena_existent=&cThis arena is already existent!
+arena_not_existent=&cThis arena isn't existent!
+arena_created=&aYou've successfully created arena &6<arena>&a.
+arena_removed=&aYou've removed arena &6<arena>&a.
+arena_selected=&5You've selected arena &6<arena>&5.
+arena_floor_set=&aYou've set the floor coords for arena &6<arena>&a.
+arena_protection_set=&aYou've set the protection coords for arena &6<arena>&a.
+arena_spawn_existent=&cThis spawn is already existent!
+arena_spawn_not_existent=&cThis spawn isn't existent!
+arena_too_many_spawns=&cYou can't add more than 16 spawns for a single arena!
+arena_too_few_spawns=&cArenas must have at least &e2 &cspawns!
+arena_spawn_added=&aThe spawn &b<spawn> &ahas been added to arena &6<arena>&a.
+arena_spawn_deleted=&aThe spawn &b<spawn> &ahas been deleted from arena &6<arena>&a.
+arena_checklist=&9Setup checklist for arena &6<arena>&9: <checklist>
+arena_ready_for_use=&2This arena is ready for use! Please type &6/pw edit [arena] &2to finish the setup.
+arena_not_ready_for_use=&cThis arena isn't ready for use! Please use &6/pw check [arena] &cand check your setup.
+arena_already_setup=&cThis arena has already been setup and isn't in edit mode!
+arena_not_setup=&cThis arena hasn't been setup yet!
+arena_toggle_edit_mode=&aThe edit mode of arena &6<arena> &ahas been turned <state>&a.
+arena_not_in_edit_mode=&cYou can't do this, because this arena isn't in edit mode!
+arena_list=&6List of arenas: <arenas>
+arena_full=&cSorry, but this arena is already full!
+arena_game_already_started=&cThe game in this arena has already been started!
+arena_game_not_started=&cThe game in this arena hasn't been started yet!
+arena_already_joined=&cYou've already joined an arena!
+arena_not_joined=&cYou haven't joined an arena yet!
+arena_joined=&bYou've joined the arena &6<arena>&b. <player_display>
+arena_joined_other=&8<player> &7has joined the arena &6<arena>&7. <player_display>
+arena_left=&4You've left the arena &6<arena>&4. <player_display>
+arena_left_other=&8<player> &chas left the arena &6<arena>&c. <player_display>
+arena_ready=&aYou have been marked as ready!
+arena_ready_other=&8<player> &9is now ready in arena &6<arena>&9.
+arena_already_ready=&cYou've already been marked as ready!
+arena_countdown=&6&lGame will start in &e&l<time> &6&lseconds!
+arena_countdown_go=&6&lGOOO&c&lOOOO&4&lOO!!!
+arena_countdown_stopped=&cThe countdown has been stopped, because there are too few players remaining!
+arena_powerup_got=&c<player> &7got the &8<powerup> &7powerup!
+arena_powerup_end=&7The effect of &c<player>'s &8<powerup> &7powerup faded away.
+arena_player_won_game=&2<player> &ahas won the game in arena &6<arena>&a!
+arena_game_overview=&3Game overview for arena &6<arena>&3: <overview>
+arena_forced_stop=&cThe game in arena &6<arena> &cwas forced to stop!
+arena_can_not_start=&cThis arena can't be started, because there are too few players!
+arena_game_started=&aYou've started the game in arena &6<arena>&a.
+arena_game_started_other=&6The game has been started by &c<player>&6.
+arena_game_stopped=&7You've stopped the game in arena &6<arena>&7.
+arena_game_stopped_other=&7The game has been stopped by &c<player>&6.
+arena_action_not_allowed=&cYou aren't allowed to &4<action> &cin the arena!
+arena_disabled=&8You've been teleported out of the arena because this arena has been disabled!
+# Stats messages below
+stats_not_found=&cThere were no statistics found for <player>!
+stats=&9<player>'s&3 statistics: <stats>
+no_top_ten=&cThere is no Top 10, yet!
+top_ten=&7Top &c10 &7list for category &a<category>&7: <top>
+# Player messages
+player_not_enough_space=&cYou don't have enough space for this item!
+player_got_wand=&aYou've got the region selection wand, check the item description for usage!
+player_position_set=&b<position> position set to &6<location>&b.
+player_too_few_positions=&cYou haven't selected &e2 &cpositions yet!
+player_list=&aList of players in arena &6<arena>&a: <players>;<player_display>
+player_inventory_not_empty=&cYour inventory is not empty!
+player_not_existent=&cThis player isn't existent!
+player_not_joined_arena=&cThis player hasn't joined an arena!
+player_kicked=&aYou've kicked &e<player> &aout of arena &6<arena>&a.
+player_kicked_other=&4You were kicked out of the arena &6<arena> &4by &e<player>&4!
+# Help page messages
+help_page_invalid_number=&cThe entered number is invalid, please type in a normal number!
+help_page_header=&7&oCommand list for PaintWar &c&o<version>&7&o:
+help_page_not_existent=&cThis help page isn't existent!
+# Sign messages
+sign_no_create_permission=&cYou don't have permission to create an arena sign!
+sign_no_break_permission=&cYou don't have permission to break an arena sign!
+sign_no_arena_found=&cThere wasn't a valid arena name found on that sign!
+sign_created=&aYou have successfully created an arena sign with id &6<id>&a.
+sign_removed=&aYou have removed the arena sign with id &6<id>&a.
+sign_list=&bList of arena signs: <signs>
+sign_not_exitent=&cThis arena sign isn't existent!
+sign_teleport=&7&oTeleporting to arena sign with id &c&o<id>&7&o...
+# Reload messages
+reload_config=&7&oThe config has been reloaded.
+reload_plugin=&7&oPaintWar has been reloaded.
+# Miscellanious message parts
+state_on=on
+state_off=off
+action_use_command=&cuse the command &6<command>
+action_place_liquids=place liquids
+action_break_blocks=break blocks
+action_place_blocks=place blocks
+action_ignite_blocks=ignite blocks
+category_won_games=Won Games
+category_lost_games=Lost Games
+category_wl=W/L Ratio
+position_first=First
+position_second=Second

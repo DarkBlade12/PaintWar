@@ -1,0 +1,13 @@
+name: PaintWar
+version: 1.0.0
+author: DarkBlade12
+website: http://dev.bukkit.org/profiles/DarkBladee12
+softdepend: [Vault]
+
+main: com.darkblade12.paintwar.PaintWar
+
+commands:
+  pw:
+    description: General PaintWar command
+    usage: /<command> help
+    aliases: [paintwar, pwar]

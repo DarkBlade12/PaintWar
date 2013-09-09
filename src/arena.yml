@@ -1,0 +1,79 @@
+# This is the arena config with default settings, if you wish to customise it but you don't know which settings does what see https://github.com/DarkBlade12/PaintWar/wiki/Arena-config-explanation
+
+General_Settings:
+ Edit_Mode: true
+ Require_Empty_Inventory: false
+ Hunger_Disabled: true
+ Ignored_Block_Ids: 20, 0
+ Command_Settings:
+  Commands_Disabled: true
+  Allowed_Commands: pw, list, msg
+
+Game_Settings:
+ Duration: 120
+ Countdown: 10
+ Default_Brush_Size: 2
+ Mode: default
+ Automatic_Start:
+  Enabled: true
+  Percent: 50
+  Player_Amount: 4
+
+Powerup_Settings:
+ Powerups_Enabled: true
+ Time_Schedule: 20, 40, 60, 80, 100
+ Default_Mode_Powerups:
+  Big_Brush:
+   Brush_Size: 5
+   Duration: 13
+  Tiny_Brush:
+   Brush_Size: 1
+   Duration: 18
+  Empty_Paint:
+   Duration: 16
+  Speed:
+   Intensity: 2
+   Duration: 14
+  Freeze:
+   Duration: 13
+  Big_Blob:
+   Blob_Size: 10
+  Tiny_Blobs:
+   Blob_Size: 2
+   Blob_Amount: 25
+  Advanced_Darkness:
+   Duration: 13
+  Drunken:
+   Intensity: 3
+   Duration: 22
+  Slowness:
+   Intensity: 1
+   Duration: 15
+  Jumping:
+   Jump_Height: 13
+   Duration: 14
+  Color_Bombs:
+   Bomb_Size: 7
+   Bomb_Amount: 5
+   Disappear_Duration: 19
+  Immortal_Color:
+   Duration: 15
+  Eraser:
+   Eraser_Size: 4
+   Duration: 17
+  Powerup_Magnet:
+   Magnet_Range: 40
+   Duration: 45
+  Dash:
+   Dash_Amount: 3
+   Disappear_Duration: 19
+  No_Borders:
+   Duration: 17
+
+Reward_Settings:
+ Item_Rewards:
+  Enabled: true
+  Items: 266-10, 288-2, 351-10-4
+ Money_Reward:
+  Enabled: true
+  Money_Amount: 500
