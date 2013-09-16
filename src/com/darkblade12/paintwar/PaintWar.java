@@ -31,8 +31,6 @@ public class PaintWar extends JavaPlugin {
 	public MessageManager message;
 	public StatsManager stats;
 	public SignManager sign;
-	
-	// Test
 
 	public void onEnable() {
 		l = getLogger();
@@ -70,7 +68,7 @@ public class PaintWar extends JavaPlugin {
 	}
 
 	private void checkForVault() {
-		if (VaultUtil.isVaultEconomyInstalled())
+		if (!VaultUtil.isVaultEconomyInstalled())
 			return;
 		l.info("Vault has been hooked, money distribution is active.");
 		vault = new VaultUtil();

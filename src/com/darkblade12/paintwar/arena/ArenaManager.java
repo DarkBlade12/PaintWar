@@ -73,7 +73,7 @@ public class ArenaManager extends Manager implements Listener {
 	public void loadArenas() {
 		arenas = new ArrayList<Arena>();
 		File directory = new File("plugins/PaintWar/arenas/");
-		if (!directory.exists() && !directory.isDirectory())
+		if (!directory.exists() || !directory.isDirectory())
 			return;
 		for (File f : directory.listFiles()) {
 			String name = f.getName();
@@ -204,7 +204,7 @@ public class ArenaManager extends Manager implements Listener {
 	public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
 		Player p = event.getPlayer();
 		int dashes = plugin.player.getDashes(p);
-		if (dashes == 0)
+		if (p.isSneaking() || dashes == 0)
 			return;
 		plugin.player.setDashes(p, dashes - 1);
 		p.setVelocity(p.getLocation().getDirection().multiply(8.0D).setY(0.25D));

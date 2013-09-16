@@ -148,7 +148,7 @@ public enum Powerup {
 			super.activate(plugin, p, manager, a);
 			final String name = p.getName();
 			int[] settings = manager.getSettings(this);
-			final int duration = settings[1] * 20;
+			final int duration = settings[0] * 20;
 			PotionEffect[] effects = new PotionEffect[] { new PotionEffect(PotionEffectType.BLINDNESS, duration, 1), new PotionEffect(PotionEffectType.NIGHT_VISION, duration, 1) };
 			for (Player ap : a.getPlayers())
 				if (!ap.getName().equals(name))
@@ -278,17 +278,21 @@ public enum Powerup {
 		public void activate(final PaintWar plugin, final Player p, final PowerupManager manager, final Arena a) {
 			super.activate(plugin, p, manager, a);
 			final String name = p.getName();
+			int[] settings = manager.getSettings(this);
 			plugin.player.setEraser(p, true);
+			plugin.player.setBrushSize(p, settings[0]);
 			final Powerup pow = this;
 			int task = manager.scheduleTask(new Runnable() {
 				@Override
 				public void run() {
 					manager.removeTasks(name, pow);
-					if (p.isOnline())
+					if (p.isOnline()) {
 						plugin.player.setEraser(p, false);
+						plugin.player.setBrushSize(p, a.getDefaultBrushSize());
+					}
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
-			}, manager.getSettings(this)[0] * 20);
+			}, settings[1] * 20);
 			manager.setTasks(name, this, new int[] { task, -1 });
 		}
 	},
@@ -312,8 +316,8 @@ public enum Powerup {
 			int task = manager.scheduleTask(new Runnable() {
 				@Override
 				public void run() {
-					manager.removeTasks(name, pow);
 					manager.cancelTask(magnetTask);
+					manager.removeTasks(name, pow);
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, settings[1] * 20);

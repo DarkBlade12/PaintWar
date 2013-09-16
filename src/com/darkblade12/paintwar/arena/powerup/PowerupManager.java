@@ -48,7 +48,6 @@ public class PowerupManager extends MultipleTaskManager {
 			index = defaultIndex + pow.getName();
 			if (config.getConfigurationSection(index) == null)
 				continue;
-			plugin.l.info("Powerup " + pow.getName() + " enabled!");
 			enabledPowerups.add(pow);
 			switch (pow) {
 				case BIG_BRUSH:
@@ -140,7 +139,7 @@ public class PowerupManager extends MultipleTaskManager {
 		powerupTasks.remove(p);
 		playerTasks.put(name, powerupTasks);
 	}
-	
+
 	public void clearTasks() {
 		playerTasks = new ConcurrentHashMap<String, Map<Powerup, int[]>>();
 	}

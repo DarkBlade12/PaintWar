@@ -56,10 +56,10 @@ public class Cuboid {
 		boolean zBorder = z == z1 || z == z2;
 		boolean z1Border = zBorder ? z == z1 : false;
 		if (xBorder) {
-			loc.setX(x1Border ? x2 : x1);
+			loc.setX(x1Border ? x2 : x1 + 1);
 		}
 		if (zBorder) {
-			loc.setZ(z1Border ? z2 : z1);
+			loc.setZ(z1Border ? z2 : z1 + 1);
 		}
 		return loc;
 

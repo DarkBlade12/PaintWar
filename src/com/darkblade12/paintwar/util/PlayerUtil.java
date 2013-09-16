@@ -20,8 +20,10 @@ public class PlayerUtil extends MetadataUtil {
 
 	public void saveState(Player p) {
 		PlayerInventory i = p.getInventory();
-		set(p, "Player_State", new Object[] { new ItemStack[][] { i.getContents(), i.getArmorContents() }, p.getGameMode().name(), p.getLocation() });
+		set(p, "Player_State", new Object[] { new ItemStack[][] { i.getContents(), i.getArmorContents() }, p.getGameMode().name(), p.getLevel(), p.getExp(), p.getLocation() });
 		p.setGameMode(GameMode.SURVIVAL);
+		p.setLevel(0);
+		p.setExp(0);
 		i.setArmorContents(new ItemStack[] { new ItemStack(0), new ItemStack(0), new ItemStack(0), new ItemStack(0) });
 		i.clear();
 	}
@@ -35,7 +37,9 @@ public class PlayerUtil extends MetadataUtil {
 		i.setContents(contents[0]);
 		i.setArmorContents(contents[1]);
 		p.setGameMode(GameMode.valueOf((String) state[1]));
-		p.teleport((Location) state[2]);
+		p.setLevel((Integer) state[2]);
+		p.setExp((Float) state[3]);
+		p.teleport((Location) state[4]);
 	}
 
 	public void setBrushSize(Player p, int size) {
@@ -111,6 +115,7 @@ public class PlayerUtil extends MetadataUtil {
 	}
 
 	public void setDashes(Player p, int dashes) {
+		p.setLevel(dashes);
 		if (dashes != 0)
 			set(p, "Dashes", dashes);
 		else
@@ -135,7 +140,7 @@ public class PlayerUtil extends MetadataUtil {
 	}
 
 	public void clean(Player p) {
-		removeAll(p, "Brush_Size", "Trail_Color", "Reserved_Spawn", "Ready", "Block_Movement", "Eraser", "Dashes");
+		removeAll(p, "Brush_Size", "Trail_Color", "Reserved_Spawn", "Ready", "Block_Movement", "Eraser", "Dashes", "No_Borders");
 		for (PotionEffect effect : p.getActivePotionEffects())
 			p.removePotionEffect(effect.getType());
 		p.setWalkSpeed(0.2F);

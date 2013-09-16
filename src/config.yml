@@ -8,7 +8,7 @@
 General_Settings:
  
  # This is the ending of the language file that will be loaded
- # PaintWar will attempt to load 'lang_<name>.yml'
+ # PaintWar will attempt to load 'lang_<name>.txt'
  # Built-in names are 'EN' for English and 'DE' for German
  Language_Name: EN
  
