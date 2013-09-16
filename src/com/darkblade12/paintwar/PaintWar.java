@@ -31,6 +31,8 @@ public class PaintWar extends JavaPlugin {
 	public MessageManager message;
 	public StatsManager stats;
 	public SignManager sign;
+	
+	// Test
 
 	public void onEnable() {
 		l = getLogger();
