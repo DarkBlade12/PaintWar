@@ -241,10 +241,10 @@ public class PaintWarCE implements CommandExecutor {
 			} else if (a.getState() != State.JOINABLE) {
 				sender.sendMessage(plugin.message.arena_game_x_started(true));
 				return true;
-			}/* else if (a.getPlayers().size() < 2) {
+			} else if (a.getPlayers().size() < 2) {
 				sender.sendMessage(plugin.message.arena_can_not_start());
 				return true;
-			}*/
+			}
 			if (p != null) {
 				PlayerStartCountdownEvent e = new PlayerStartCountdownEvent(p, a);
 				e.call();
