@@ -18,6 +18,9 @@ Game_Settings:
   Enabled: true
   Percent: 50
   Player_Amount: 4
+ Time_Remaining_Messages:
+  Enabled: true
+  Time_Schedule: 60, 110
 
 Powerup_Settings:
  Powerups_Enabled: true

@@ -5,7 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
 
-public class LocationUtil {
+public abstract class LocationUtil {
 
 	public static String parse(Location loc) {
 		return loc == null ? null : loc.getWorld().getName() + ", " + loc.getX() + ", " + loc.getY() + ", " + loc.getZ();

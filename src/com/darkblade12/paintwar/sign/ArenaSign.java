@@ -3,6 +3,7 @@ package com.darkblade12.paintwar.sign;
 import java.util.List;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Sign;
 
 import com.darkblade12.paintwar.PaintWar;
@@ -12,7 +13,6 @@ import com.darkblade12.paintwar.util.LocationUtil;
 
 public class ArenaSign {
 	public final static String HEADER = "§aPaint§4War";
-	private final static String NO_PLAYERS = "--No players--";
 	private PaintWar plugin;
 	private String id;
 	private Location location;
@@ -82,7 +82,7 @@ public class ArenaSign {
 						playersScrolling = false;
 						textPosition = 0;
 					}
-					text = createScrollingText(NO_PLAYERS);
+					text = scrollFurther(plugin.message.getMessage("no_players"));
 				} else {
 					if (!playersScrolling) {
 						playersScrolling = true;
@@ -92,13 +92,14 @@ public class ArenaSign {
 					for (int b = 0; b < players.size(); b++)
 						builder.append(players.get(i) + ", ");
 					String list = builder.toString();
-					text = createScrollingText(list.length() < 14 ? list.substring(0, list.length() - 2) : list);
+					text = scrollFurther(list.length() < 14 ? list.substring(0, list.length() - 2) : list);
 				}
 			} else if (i == 1) {
-				text = a.getPlayerDisplay();
+				String d = a.getPlayerDisplay();
+				text = d.substring(2, d.length() - 3) + "§r}";
 			} else if (i == 2) {
 				State st = a.getState();
-				text = (st == State.JOINABLE ? "§a" : st == State.COUNTING ? "§6" : "§4") + st.getName();
+				text = (st == State.JOINABLE ? "§a" : st == State.COUNTING ? "§6" : "§4") + plugin.message.getMessage("state_" + st.getName());
 			} else {
 				text = "§8" + a.getMode().getName();
 			}
@@ -108,16 +109,16 @@ public class ArenaSign {
 		update();
 	}
 
-	private String createScrollingText(String text) {
+	private String scrollFurther(String text) {
 		if (text.length() < 14) {
 			return "§e" + text;
 		}
-		int end = textPosition + 14;
-		String marquee = "§e" + (end > text.length() ? text.substring(textPosition, text.length()) + text.substring(0, 14 - (text.length() - textPosition)) : text.substring(textPosition, end));
+		int e = textPosition + 14;
+		String f = "§e" + (e > text.length() ? text.substring(textPosition, text.length()) + text.substring(0, 14 - (text.length() - textPosition)) : text.substring(textPosition, e));
 		textPosition++;
 		if (textPosition == text.length())
 			textPosition = 0;
-		return marquee;
+		return f;
 	}
 
 	public void update() {
@@ -128,7 +129,7 @@ public class ArenaSign {
 		plugin.sign.config.set(id, null);
 		plugin.sign.saveConfig();
 		plugin.sign.removeSign(this);
-		location.getBlock().setTypeId(0);
+		location.getBlock().setType(Material.AIR);
 		if (automatically)
 			plugin.l.info("Arena sign with id '" + id + "' has been automatically removed! Reason: Sign or Arena is no longer existent");
 	}

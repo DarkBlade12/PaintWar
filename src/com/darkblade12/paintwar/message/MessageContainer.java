@@ -103,6 +103,8 @@ public interface MessageContainer {
 	public String arena_action_not_allowed(String action);
 
 	public String arena_disabled();
+	
+	public String arena_time_remaining(int seconds);
 
 	public String stats_not_found(String player);
 

@@ -33,7 +33,7 @@ public enum Stat {
 	}
 
 	public String getAlternativeName() {
-		return this.name;
+		return this.alternativeName;
 	}
 
 	public static Stat fromName(String name) {

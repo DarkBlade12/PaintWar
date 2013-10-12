@@ -119,7 +119,7 @@ public enum ParticleEffect {
 	public static void playIconCrack(Player p, Location loc, int id, float offsetX, float offsetY, float offsetZ, int amount) {
 		sendPacket(p, createIconCrackPacket(id, loc, offsetX, offsetY, offsetZ, amount));
 	}
-	
+
 	public static void playIconCrack(Location loc, int id, float offsetX, float offsetY, float offsetZ, int amount) {
 		Object packet = createIconCrackPacket(id, loc, offsetX, offsetY, offsetZ, amount);
 		for (Player p : loc.getWorld().getPlayers())
@@ -149,7 +149,7 @@ public enum ParticleEffect {
 		if (amount <= 0)
 			throw new IllegalArgumentException("Amount of particles has to be greater than 0!");
 		try {
-			Object packet = ReflectionUtil.getClass("Packet63WorldParticles");
+			Object packet = ReflectionUtil.getInstance("Packet63WorldParticles");
 			ReflectionUtil.setValue(packet, "a", effectName);
 			ReflectionUtil.setValue(packet, "b", (float) loc.getX());
 			ReflectionUtil.setValue(packet, "c", (float) loc.getY());

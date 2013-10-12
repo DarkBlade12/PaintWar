@@ -30,13 +30,13 @@ public class MessageManager extends Manager implements MessageContainer {
 		numberSymbols.put(1, "§6\u2776");
 		numberSymbols.put(2, "§7\u2777");
 		numberSymbols.put(3, "§8\u2778");
-		numberSymbols.put(4, "§0\u2779");
-		numberSymbols.put(5, "§0\u277A");
-		numberSymbols.put(6, "§0\u277B");
-		numberSymbols.put(7, "§0\u277C");
-		numberSymbols.put(8, "§0\u277D");
-		numberSymbols.put(9, "§0\u277E");
-		numberSymbols.put(10, "§0\u277F");
+		numberSymbols.put(4, "§f\u2779");
+		numberSymbols.put(5, "§f\u277A");
+		numberSymbols.put(6, "§f\u277B");
+		numberSymbols.put(7, "§f\u277C");
+		numberSymbols.put(8, "§f\u277D");
+		numberSymbols.put(9, "§f\u277E");
+		numberSymbols.put(10, "§f\u277F");
 	}
 
 	public MessageManager(PaintWar plugin) {
@@ -67,9 +67,9 @@ public class MessageManager extends Manager implements MessageContainer {
 			BufferedReader reader = loader.getReader();
 			String line = reader.readLine();
 			while (line != null) {
-				String[] split = line.split("=");
-				if (split.length == 2 && !line.startsWith("#"))
-					messages.put(split[0], ChatColor.translateAlternateColorCodes('&', split[1]).replace(";", "\n"));
+				String[] s = line.split("=");
+				if (s.length == 2 && !line.startsWith("#"))
+					messages.put(s[0], ChatColor.translateAlternateColorCodes('&', s[1]).replace(";", "\n"));
 				line = reader.readLine();
 			}
 			reader.close();
@@ -95,7 +95,7 @@ public class MessageManager extends Manager implements MessageContainer {
 	}
 
 	public static String randomColorCode() {
-		return "§" + colorCodeModifiers[rn.nextInt(colorCodeModifiers.length)];
+		return "§" + colorCodeModifiers[RANDOM.nextInt(colorCodeModifiers.length)];
 	}
 
 	public static String getSymbol(int num) {
@@ -111,19 +111,19 @@ public class MessageManager extends Manager implements MessageContainer {
 		return builder.toString();
 	}
 
-	private String getArenaList() {
+	private String arenaListToString() {
 		List<Arena> arenas = plugin.arena.getArenas();
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < arenas.size(); i++) {
 			Arena a = arenas.get(i);
 			State s = a.getState();
 			builder.append("\n " + randomColorCode() + "\u276D\u276F\u2771 §7§o" + a.getName() + " §r\u268A "
-					+ (a.isSetup() ? (s == State.JOINABLE ? "§a" : s == State.COUNTING ? "§6" : "§4") + "§l" + s.getName() : "§4§lNot setup"));
+					+ (a.isSetup() ? (s == State.JOINABLE ? "§a" : s == State.COUNTING ? "§6" : "§4") + "§l" + getMessage("state_" + s.getName()) : "§4§lNot setup"));
 		}
 		return builder.toString();
 	}
 
-	private String getPlayerList(Arena a) {
+	private String playerListToString(Arena a) {
 		StringBuilder builder = new StringBuilder();
 		for (String name : a.getPlayerNames())
 			builder.append("\n §6\u25BB §e§o" + name);
@@ -141,12 +141,16 @@ public class MessageManager extends Manager implements MessageContainer {
 		Map<Integer, String> top = plugin.stats.getTop(s);
 		for (int i = 1; i <= top.size(); i++) {
 			String name = top.get(i);
-			builder.append("\n§r " + getSymbol(i) + " §e§l" + name + ": §a§l" + (wl ? plugin.stats.getRatio(name) : plugin.stats.get(name, s)));
+			builder.append("\n§r " + getSymbol(i) + " §e§l" + name + ": §a§l");
+			if (!wl)
+				builder.append(plugin.stats.get(name, s));
+			else
+				builder.append(plugin.stats.getRatio(name));
 		}
 		return builder.toString();
 	}
 
-	private String getSignList() {
+	private String signListToString() {
 		StringBuilder builder = new StringBuilder();
 		List<ArenaSign> signs = plugin.sign.getSigns();
 		for (int i = 0; i < signs.size(); i++) {
@@ -228,7 +232,7 @@ public class MessageManager extends Manager implements MessageContainer {
 
 	@Override
 	public String arena_list() {
-		return getMessage("arena_list", true).replace("<arenas>", getArenaList());
+		return getMessage("arena_list", true).replace("<arenas>", arenaListToString());
 	}
 
 	@Override
@@ -347,6 +351,11 @@ public class MessageManager extends Manager implements MessageContainer {
 	}
 
 	@Override
+	public String arena_time_remaining(int seconds) {
+		return getMessage("arena_time_remaining", true).replace("<seconds>", seconds + "");
+	}
+
+	@Override
 	public String arena_disabled() {
 		return getMessage("arena_disabled", true);
 	}
@@ -387,9 +396,9 @@ public class MessageManager extends Manager implements MessageContainer {
 	public String player_position_set(Player player, boolean first, Location location) {
 		String player_position_set = getMessage("player_position_set", true).replace("<position>", first ? getMessage("position_first") : getMessage("position_second")).replace("<location>",
 				location.getX() + ", " + location.getY() + ", " + location.getZ());
-		if (plugin.player.hasSelectedBothPositions(player))
+		if (plugin.data.isSelectionComplete(player))
 			try {
-				player_position_set += " §8(§e" + new Cuboid(plugin.player.getPosition(player, true), plugin.player.getPosition(player, false)).getBlocks().size() + "§8)";
+				player_position_set += " §8(§e" + new Cuboid(plugin.data.getPosition(player, true), plugin.data.getPosition(player, false)).getVolume() + "§8)";
 			} catch (Exception e) {
 				// failed to initiate the {@Cuboid}, should not happen since it's checked before
 			}
@@ -403,7 +412,7 @@ public class MessageManager extends Manager implements MessageContainer {
 
 	@Override
 	public String player_list(Arena arena) {
-		return getMessage("player_list", true).replace("<arena>", arena.getName()).replace("<players>", getPlayerList(arena)).replace("<player_display>", arena.getPlayerDisplay());
+		return getMessage("player_list", true).replace("<arena>", arena.getName()).replace("<players>", playerListToString(arena)).replace("<player_display>", arena.getPlayerDisplay());
 	}
 
 	@Override
@@ -463,7 +472,7 @@ public class MessageManager extends Manager implements MessageContainer {
 
 	@Override
 	public String sign_list() {
-		return getMessage("sign_list", true).replace("<signs>", getSignList());
+		return getMessage("sign_list", true).replace("<signs>", signListToString());
 	}
 
 	@Override

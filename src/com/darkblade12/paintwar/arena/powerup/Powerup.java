@@ -15,6 +15,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import com.darkblade12.paintwar.PaintWar;
 import com.darkblade12.paintwar.arena.Arena;
+import com.darkblade12.paintwar.arena.util.PaintColor;
 import com.darkblade12.paintwar.util.LocationUtil;
 
 public enum Powerup {
@@ -24,17 +25,17 @@ public enum Powerup {
 			super.activate(plugin, p, manager, a);
 			final String name = p.getName();
 			int[] settings = manager.getSettings(this);
-			plugin.player.setBrushSize(p, settings[0]);
+			plugin.data.setBrushSize(p, settings[0]);
 			final Powerup pow = this;
 			int task = manager.scheduleTask(new Runnable() {
 				@Override
 				public void run() {
 					manager.removeTasks(name, pow);
-					plugin.player.setBrushSize(p, a.getDefaultBrushSize());
+					plugin.data.setBrushSize(p, a.getDefaultBrushSize());
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, settings[1] * 20);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	},
 	TINY_BRUSH("Tiny_Brush", Material.GOLD_NUGGET) {
@@ -45,7 +46,7 @@ public enum Powerup {
 			int[] settings = manager.getSettings(this);
 			for (Player ap : a.getPlayers())
 				if (!ap.getName().equals(name))
-					plugin.player.setBrushSize(ap, settings[0]);
+					plugin.data.setBrushSize(ap, settings[0]);
 			final Powerup pow = this;
 			final int defaultSize = a.getDefaultBrushSize();
 			int task = manager.scheduleTask(new Runnable() {
@@ -53,12 +54,12 @@ public enum Powerup {
 				public void run() {
 					manager.removeTasks(name, pow);
 					for (Player ap : a.getPlayers())
-						if (!ap.getName().equals(name) && plugin.player.getBrushSize(ap) < defaultSize)
-							plugin.player.setBrushSize(ap, defaultSize);
+						if (!ap.getName().equals(name) && plugin.data.getBrushSize(ap) < defaultSize)
+							plugin.data.setBrushSize(ap, defaultSize);
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, settings[1] * 20);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	},
 	EMPTY_PAINT("Empty_Paint", Material.BUCKET) {
@@ -69,7 +70,7 @@ public enum Powerup {
 			int[] settings = manager.getSettings(this);
 			for (Player ap : a.getPlayers())
 				if (!ap.getName().equals(name))
-					plugin.player.setEmptyPaint(ap, true);
+					plugin.data.setEmptyPaint(ap, true);
 			final Powerup pow = this;
 			int task = manager.scheduleTask(new Runnable() {
 				@Override
@@ -77,11 +78,11 @@ public enum Powerup {
 					manager.removeTasks(name, pow);
 					for (Player ap : a.getPlayers())
 						if (!ap.getName().equals(name))
-							plugin.player.setEmptyPaint(ap, false);
+							plugin.data.setEmptyPaint(ap, false);
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, settings[0] * 20);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	},
 	SPEED("Speed", Material.DIAMOND_BOOTS) {
@@ -100,7 +101,7 @@ public enum Powerup {
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, duration);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	},
 	FREEZE("Freeze", Material.ICE) {
@@ -111,7 +112,7 @@ public enum Powerup {
 			int[] settings = manager.getSettings(this);
 			for (Player ap : a.getPlayers())
 				if (!ap.getName().equals(name))
-					plugin.player.blockMovement(ap, true);
+					plugin.data.setBlockMovement(ap, true);
 			final Powerup pow = this;
 			int task = manager.scheduleTask(new Runnable() {
 				@Override
@@ -119,11 +120,11 @@ public enum Powerup {
 					manager.removeTasks(name, pow);
 					for (Player ap : a.getPlayers())
 						if (!ap.getName().equals(name))
-							plugin.player.blockMovement(ap, false);
+							plugin.data.setBlockMovement(ap, false);
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, settings[0] * 20);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	},
 	BIG_BLOB("Big_Blob", Material.FIREWORK_CHARGE) {
@@ -131,7 +132,7 @@ public enum Powerup {
 		public void activate(final PaintWar plugin, final Player p, final PowerupManager manager, final Arena a) {
 			super.activate(plugin, p, manager, a);
 			Location loc = p.getLocation();
-			a.getFloor().createBlob(p, loc.getBlockX(), a.getFloor().getLowerNE().getBlockY(), loc.getBlockZ(), manager.getSettings(this)[0]);
+			a.getFloor().colorCircle(p, loc.getBlockX(), a.getFloor().getLowerNE().getBlockY(), loc.getBlockZ(), manager.getSettings(this)[0]);
 		}
 	},
 	TINY_BLOBS("Tiny_Blobs", Material.PUMPKIN_SEEDS) {
@@ -139,7 +140,7 @@ public enum Powerup {
 		public void activate(final PaintWar plugin, final Player p, final PowerupManager manager, final Arena a) {
 			super.activate(plugin, p, manager, a);
 			int[] settings = manager.getSettings(this);
-			a.getFloor().createTinyBlobs(p, settings[1], settings[0]);
+			a.getFloor().colorMultipleCircles(p, settings[1], settings[0]);
 		}
 	},
 	ADVANCED_DARKNESS("Advanced_Darkness", Material.EYE_OF_ENDER) {
@@ -162,7 +163,7 @@ public enum Powerup {
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, duration);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	},
 	DRUNKEN("Drunken", Material.POTION) {
@@ -184,7 +185,7 @@ public enum Powerup {
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, duration);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	},
 	SLOWNESS("Slowness", Material.COAL) {
@@ -206,7 +207,7 @@ public enum Powerup {
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, duration);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	},
 	JUMPING("Jumping", Material.FEATHER) {
@@ -221,7 +222,7 @@ public enum Powerup {
 				public void run() {
 					for (Player ap : a.getPlayers())
 						if (!ap.getName().equals(name))
-							p.setVelocity(p.getVelocity().setY((height / 10.0D)));
+							ap.setVelocity(p.getVelocity().setY((height / 10.0D)));
 				}
 			}, 0, 40);
 			final Powerup pow = this;
@@ -233,7 +234,7 @@ public enum Powerup {
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, settings[1] * 20);
-			manager.setTasks(name, this, new int[] { task, jumpTask });
+			manager.addTasks(name, this, task, jumpTask);
 		}
 	},
 	COLOR_BOMBS("Color_Bombs", Material.SLIME_BALL) {
@@ -251,7 +252,7 @@ public enum Powerup {
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, settings[2] * 20);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	},
 	IMMORTAL_COLOR("Immortal_Color", Material.BEDROCK) {
@@ -259,18 +260,18 @@ public enum Powerup {
 		public void activate(final PaintWar plugin, final Player p, final PowerupManager manager, final Arena a) {
 			super.activate(plugin, p, manager, a);
 			final String name = p.getName();
-			final byte color = plugin.player.getTrailColor(p);
-			a.getFloor().setColorImmortal(color, true);
+			final PaintColor color = plugin.data.getPaintColor(p);
+			a.getFloor().setImmortal(color, true);
 			final Powerup pow = this;
 			int task = manager.scheduleTask(new Runnable() {
 				@Override
 				public void run() {
 					manager.removeTasks(name, pow);
-					a.getFloor().setColorImmortal(color, false);
+					a.getFloor().setImmortal(color, false);
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, manager.getSettings(this)[0] * 20);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	},
 	ERASER("Eraser", Material.EMPTY_MAP) {
@@ -279,21 +280,21 @@ public enum Powerup {
 			super.activate(plugin, p, manager, a);
 			final String name = p.getName();
 			int[] settings = manager.getSettings(this);
-			plugin.player.setEraser(p, true);
-			plugin.player.setBrushSize(p, settings[0]);
+			plugin.data.setEraser(p, true);
+			plugin.data.setBrushSize(p, settings[0]);
 			final Powerup pow = this;
 			int task = manager.scheduleTask(new Runnable() {
 				@Override
 				public void run() {
 					manager.removeTasks(name, pow);
 					if (p.isOnline()) {
-						plugin.player.setEraser(p, false);
-						plugin.player.setBrushSize(p, a.getDefaultBrushSize());
+						plugin.data.setEraser(p, false);
+						plugin.data.setBrushSize(p, a.getDefaultBrushSize());
 					}
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, settings[1] * 20);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	},
 	POWERUP_MAGNET("Powerup_Magnet", Material.COMPASS) {
@@ -321,7 +322,7 @@ public enum Powerup {
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, settings[1] * 20);
-			manager.setTasks(name, this, new int[] { task, magnetTask });
+			manager.addTasks(name, this, task, magnetTask);
 		}
 	},
 	DASH("Dash", Material.FIREWORK) {
@@ -330,18 +331,18 @@ public enum Powerup {
 			super.activate(plugin, p, manager, a);
 			final String name = p.getName();
 			int[] settings = manager.getSettings(this);
-			plugin.player.setDashes(p, settings[0]);
+			plugin.data.setDashes(p, settings[0]);
 			final Powerup pow = this;
 			int task = manager.scheduleTask(new Runnable() {
 				@Override
 				public void run() {
 					manager.removeTasks(name, pow);
 					if (p.isOnline())
-						plugin.player.setDashes(p, 0);
+						plugin.data.setDashes(p, 0);
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, settings[1] * 20);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	},
 	NO_BORDERS("No_Borders", Material.DRAGON_EGG) {
@@ -349,29 +350,31 @@ public enum Powerup {
 		public void activate(final PaintWar plugin, final Player p, final PowerupManager manager, final Arena a) {
 			super.activate(plugin, p, manager, a);
 			final String name = p.getName();
-			plugin.player.setNoBorders(p, true);
+			plugin.data.setNoBorders(p, true);
 			final Powerup pow = this;
 			int task = manager.scheduleTask(new Runnable() {
 				@Override
 				public void run() {
 					manager.removeTasks(name, pow);
 					if (p.isOnline())
-						plugin.player.setNoBorders(p, false);
+						plugin.data.setNoBorders(p, false);
 					a.broadcastMessage(plugin.message.arena_powerup_x(false, name, getName()));
 				}
 			}, manager.getSettings(this)[0] * 20);
-			manager.setTasks(name, this, new int[] { task, -1 });
+			manager.addTasks(name, this, task);
 		}
 	};
 
 	private String name;
 	private ItemStack item;
 	private static final Map<String, Powerup> NAME_MAP = new HashMap<String, Powerup>();
+	private static final Map<Material, Powerup> ICON_MAP = new HashMap<Material, Powerup>();
 
 	static {
-		for (Powerup pow : values())
-			if (pow.name != null)
-				NAME_MAP.put(pow.getName(), pow);
+		for (Powerup p : values()) {
+			NAME_MAP.put(p.getName(), p);
+			ICON_MAP.put(p.getIcon(), p);
+		}
 	}
 
 	private Powerup(String name, Material icon) {
@@ -381,6 +384,10 @@ public enum Powerup {
 
 	public String getName() {
 		return this.name;
+	}
+
+	public Material getIcon() {
+		return item.getType();
 	}
 
 	public ItemStack getItem() {
@@ -393,20 +400,18 @@ public enum Powerup {
 	}
 
 	public static Powerup fromName(String name) {
-		if (name == null)
-			return null;
-		for (Entry<String, Powerup> e : NAME_MAP.entrySet())
-			if (e.getKey().equalsIgnoreCase(name))
-				return e.getValue();
+		if (name != null)
+			for (Entry<String, Powerup> e : NAME_MAP.entrySet())
+				if (e.getKey().equalsIgnoreCase(name))
+					return e.getValue();
 		return null;
 	}
 
 	public static Powerup fromIcon(Material icon) {
-		if (icon == null)
-			return null;
-		for (Powerup pow : NAME_MAP.values())
-			if (pow.getItem().getType() == icon)
-				return pow;
+		if (icon != null)
+			for (Entry<Material, Powerup> e : ICON_MAP.entrySet())
+				if (e.getKey() == icon)
+					return e.getValue();
 		return null;
 	}
 }

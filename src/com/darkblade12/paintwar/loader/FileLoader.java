@@ -48,9 +48,8 @@ public abstract class FileLoader {
 			OutputStream out = new FileOutputStream(outputFile);
 			byte[] buf = new byte[1024];
 			int len;
-			while ((len = in.read(buf)) > 0) {
+			while ((len = in.read(buf)) > 0)
 				out.write(buf, 0, len);
-			}
 			out.close();
 			in.close();
 			return true;

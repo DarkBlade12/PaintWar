@@ -43,6 +43,7 @@ import com.darkblade12.paintwar.arena.region.Cuboid;
 import com.darkblade12.paintwar.manager.Manager;
 import com.darkblade12.paintwar.util.ParticleEffect;
 
+@SuppressWarnings("deprecation")
 public class ArenaManager extends Manager implements Listener {
 	private List<Arena> arenas;
 	AutoKickManager kick;
@@ -90,10 +91,6 @@ public class ArenaManager extends Manager implements Listener {
 		plugin.l.info(amount + " arena" + (amount == 1 ? "" : "s") + " loaded.");
 	}
 
-	public List<Arena> getArenas() {
-		return this.arenas;
-	}
-
 	public void addArena(Arena a) {
 		arenas.add(a);
 	}
@@ -104,6 +101,29 @@ public class ArenaManager extends Manager implements Listener {
 			if (arenas.get(i).getName().equals(name)) {
 				arenas.remove(i);
 				return;
+			}
+		}
+	}
+
+	public void updateArena(Arena a) {
+		String name = a.getName();
+		for (int i = 0; i < arenas.size(); i++) {
+			if (arenas.get(i).getName().equals(name)) {
+				arenas.set(i, a);
+				return;
+			}
+		}
+	}
+
+	private void checkIllegalPlayerAction(Cancellable event, Player p, Location loc, String action) {
+		Arena a = getArena(loc);
+		if (a != null) {
+			if (!p.hasPermission("PaintWar.build." + a.getName()) && !p.hasPermission("PaintWar.build.*") && !p.hasPermission("PaintWar.*")) {
+				event.setCancelled(true);
+				p.sendMessage(plugin.message.arena_action_not_allowed(action));
+			} else if (!a.isInEditMode()) {
+				event.setCancelled(true);
+				p.sendMessage(plugin.message.arena_not_in_edit_mode());
 			}
 		}
 	}
@@ -126,16 +146,6 @@ public class ArenaManager extends Manager implements Listener {
 		return null;
 	}
 
-	public void updateArena(Arena a) {
-		String name = a.getName();
-		for (int i = 0; i < arenas.size(); i++) {
-			if (arenas.get(i).getName().equals(name)) {
-				arenas.set(i, a);
-				return;
-			}
-		}
-	}
-
 	public Arena getJoinedArena(Player p) {
 		String name = p.getName();
 		for (int i = 0; i < arenas.size(); i++) {
@@ -146,21 +156,12 @@ public class ArenaManager extends Manager implements Listener {
 		return null;
 	}
 
-	public boolean hasJoinedArena(Player p) {
-		return getJoinedArena(p) != null;
+	public List<Arena> getArenas() {
+		return this.arenas;
 	}
 
-	private void checkIllegalPlayerAction(Cancellable event, Player p, Location loc, String action) {
-		Arena a = getArena(loc);
-		if (a == null)
-			return;
-		if (!p.hasPermission("PaintWar.build." + a.getName()) || !p.hasPermission("PaintWar.*")) {
-			event.setCancelled(true);
-			p.sendMessage(plugin.message.arena_action_not_allowed(action));
-		} else if (!a.isInEditMode()) {
-			event.setCancelled(true);
-			p.sendMessage(plugin.message.arena_not_in_edit_mode());
-		}
+	public boolean hasJoinedArena(Player p) {
+		return getJoinedArena(p) != null;
 	}
 
 	@EventHandler(priority = EventPriority.HIGH)
@@ -171,18 +172,18 @@ public class ArenaManager extends Manager implements Listener {
 		Location t = event.getTo();
 		if (f.getX() == t.getX() && f.getY() == t.getY() && f.getZ() == t.getZ() || a == null)
 			return;
-		if (plugin.player.isMovementBlocked(p)) {
+		if (plugin.data.getBlockMovement(p)) {
 			if (f.getY() <= t.getY())
 				p.teleport(f);
 			return;
 		} else if (a.getState() != State.NOT_JOINABLE)
 			return;
-		if (plugin.player.hasNoBorders(p)) {
+		if (plugin.data.hasNoBorders(p)) {
 			Cuboid floor = a.getFloor();
-			if (floor.isAtHorizontalBorder(t))
+			if (floor.reachedHorizontalBorder(t))
 				p.teleport(floor.getHorizontalMirrorLocation(t));
 		}
-		a.getFloor().createTrail(p);
+		a.getFloor().colorTrace(p);
 	}
 
 	@EventHandler(priority = EventPriority.HIGH)
@@ -197,17 +198,17 @@ public class ArenaManager extends Manager implements Listener {
 			return;
 		Location loc = pr.getLocation();
 		loc.getWorld().playSound(loc, Sound.SLIME_WALK2, 1.0F, 5.0F);
-		a.getFloor().createBlob(p, loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ(), a.getColorBombSize());
+		a.getFloor().colorCircle(p, loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ(), a.getColorBombSize());
 	}
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
 		Player p = event.getPlayer();
-		int dashes = plugin.player.getDashes(p);
-		if (p.isSneaking() || dashes == 0)
-			return;
-		plugin.player.setDashes(p, dashes - 1);
-		p.setVelocity(p.getLocation().getDirection().multiply(8.0D).setY(0.25D));
+		int dashes = plugin.data.getDashes(p);
+		if (!p.isSneaking() && dashes != 0) {
+			plugin.data.setDashes(p, dashes - 1);
+			p.setVelocity(p.getLocation().getDirection().multiply(8.0D).setY(0.25D));
+		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -216,18 +217,18 @@ public class ArenaManager extends Manager implements Listener {
 		Arena a = getJoinedArena(p);
 		Item i = event.getItem();
 		Powerup pow = Powerup.fromIcon(i.getItemStack().getType());
-		if (a == null || pow == null)
-			return;
-		event.setCancelled(true);
-		PlayerGetPowerupEvent e = new PlayerGetPowerupEvent(p, a, pow);
-		e.call();
-		if (!e.isCancelled()) {
-			Location loc = i.getLocation();
-			ParticleEffect.RED_DUST.play(loc.add(0.0D, 1.5D, 0.0D), 0.3F, 0.3F, 0.3F, 0.0F, 22);
-			loc.getWorld().playSound(loc, Sound.ORB_PICKUP, 1.0F, 5.0F);
-			a.broadcastMessage(plugin.message.arena_powerup_x(true, p.getName(), pow.getName()));
-			a.activatePowerup(p, pow);
-			i.remove();
+		if (a != null && pow != null) {
+			event.setCancelled(true);
+			PlayerGetPowerupEvent e = new PlayerGetPowerupEvent(p, a, pow);
+			e.call();
+			if (!e.isCancelled()) {
+				Location loc = i.getLocation();
+				ParticleEffect.RED_DUST.play(loc.add(0.0D, 1.5D, 0.0D), 0.3F, 0.3F, 0.3F, 0.0F, 22);
+				loc.getWorld().playSound(loc, Sound.ORB_PICKUP, 1.0F, 5.0F);
+				a.broadcastMessage(plugin.message.arena_powerup_x(true, p.getName(), pow.getName()));
+				a.activatePowerup(p, pow);
+				i.remove();
+			}
 		}
 	}
 
@@ -235,27 +236,26 @@ public class ArenaManager extends Manager implements Listener {
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		Player p = event.getPlayer();
 		Arena a = getJoinedArena(p);
-		if (a == null)
-			return;
-		a.handleLeave(p);
+		if (a != null)
+			a.handleLeave(p);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerChat(AsyncPlayerChatEvent event) {
 		Player p = event.getPlayer();
 		Arena a = getJoinedArena(p);
-		if (a == null || !event.getMessage().equalsIgnoreCase("ready"))
-			return;
-		event.setCancelled(true);
-		if (a.getState() != State.JOINABLE) {
-			p.sendMessage(plugin.message.arena_game_x_started(true));
-		} else if (plugin.player.isReady(p)) {
-			p.sendMessage(plugin.message.arena_already_ready());
-		} else {
-			plugin.player.markAsReady(p);
-			p.sendMessage(plugin.message.arena_ready());
-			a.broadcastMessage(plugin.message.arena_ready_other(p.getName(), a.getName()));
-			a.checkCountdownStart();
+		if (a != null && event.getMessage().equalsIgnoreCase("ready")) {
+			event.setCancelled(true);
+			if (a.getState() != State.JOINABLE) {
+				p.sendMessage(plugin.message.arena_game_x_started(true));
+			} else if (plugin.data.isReady(p)) {
+				p.sendMessage(plugin.message.arena_already_ready());
+			} else {
+				plugin.data.setReady(p, true);
+				p.sendMessage(plugin.message.arena_ready());
+				a.broadcastMessage(plugin.message.arena_ready_other(p.getName(), a.getName()));
+				a.initiateCountdown();
+			}
 		}
 	}
 
@@ -263,43 +263,38 @@ public class ArenaManager extends Manager implements Listener {
 	public void onPlayerFoodLevelChange(FoodLevelChangeEvent event) {
 		Player p = (Player) event.getEntity();
 		Arena a = getJoinedArena(p);
-		if (a == null || !a.hasHungerDisabled())
-			return;
-		event.setCancelled(true);
+		if (a != null && a.hasHungerDisabled())
+			event.setCancelled(true);
 	}
 
-	@SuppressWarnings("deprecation")
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerDropItem(PlayerDropItemEvent event) {
 		Player p = event.getPlayer();
-		if (!hasJoinedArena(p))
-			return;
-		event.setCancelled(true);
-		p.updateInventory();
+		if (hasJoinedArena(p)) {
+			event.setCancelled(true);
+			p.updateInventory();
+		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onEntityDamage(EntityDamageEvent event) {
 		Entity e = event.getEntity();
-		if (!(e instanceof Player))
-			return;
-		Player p = (Player) e;
-		if (!hasJoinedArena(p))
-			return;
-		event.setCancelled(true);
+		if (e instanceof Player)
+			if (hasJoinedArena((Player) e))
+				event.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
 		Player p = event.getPlayer();
 		Arena a = getJoinedArena(p);
-		if (a == null)
-			return;
-		String cmd = event.getMessage().toLowerCase();
-		if (a.isCommandAllowed(cmd.replace("/", "")))
-			return;
-		event.setCancelled(true);
-		p.sendMessage(plugin.message.arena_action_not_allowed(plugin.message.getMessage("action_use_command").replace("<command>", cmd.split(" ")[0])));
+		if (a != null) {
+			String cmd = event.getMessage().toLowerCase();
+			if (!a.isCommandAllowed(cmd.replace("/", ""))) {
+				event.setCancelled(true);
+				p.sendMessage(plugin.message.arena_action_not_allowed(plugin.message.getMessage("action_use_command").replace("<command>", cmd.split(" ")[0])));
+			}
+		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
@@ -311,7 +306,7 @@ public class ArenaManager extends Manager implements Listener {
 			/* Protection part start */
 			if (h.getType() == Material.WATER_BUCKET || h.getType() == Material.LAVA_BUCKET)
 				if (a == Action.RIGHT_CLICK_BLOCK)
-					checkIllegalPlayerAction(event, event.getPlayer(), event.getClickedBlock().getLocation(), plugin.message.getMessage("place_liquids"));
+					checkIllegalPlayerAction(event, event.getPlayer(), event.getClickedBlock().getLocation(), plugin.message.getMessage("action_place_liquids"));
 			/* Protection part end */
 			return;
 		}
@@ -319,24 +314,24 @@ public class ArenaManager extends Manager implements Listener {
 		if (a.name().contains("BLOCK")) {
 			Location loc = event.getClickedBlock().getLocation();
 			boolean first = a == Action.LEFT_CLICK_BLOCK;
-			plugin.player.selectPosition(p, loc, first);
+			plugin.data.setPosition(p, loc, first);
 			p.sendMessage(plugin.message.player_position_set(p, first, loc));
 		}
 	}
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onBlockBreak(BlockBreakEvent event) {
-		checkIllegalPlayerAction(event, event.getPlayer(), event.getBlock().getLocation(), plugin.message.getMessage("break_blocks"));
+		checkIllegalPlayerAction(event, event.getPlayer(), event.getBlock().getLocation(), plugin.message.getMessage("action_break_blocks"));
 	}
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onBlockPlace(BlockPlaceEvent event) {
-		checkIllegalPlayerAction(event, event.getPlayer(), event.getBlock().getLocation(), plugin.message.getMessage("place_blocks"));
+		checkIllegalPlayerAction(event, event.getPlayer(), event.getBlock().getLocation(), plugin.message.getMessage("action_place_blocks"));
 	}
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onBlockIgnite(BlockIgniteEvent event) {
-		checkIllegalPlayerAction(event, event.getPlayer(), event.getBlock().getLocation(), plugin.message.getMessage("ignite_blocks"));
+		checkIllegalPlayerAction(event, event.getPlayer(), event.getBlock().getLocation(), plugin.message.getMessage("action_ignite_blocks"));
 	}
 
 	@EventHandler(priority = EventPriority.LOW)

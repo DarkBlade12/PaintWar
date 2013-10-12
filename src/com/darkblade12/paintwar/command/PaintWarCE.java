@@ -12,10 +12,10 @@ import com.darkblade12.paintwar.arena.State;
 import com.darkblade12.paintwar.arena.event.PlayerStartCountdownEvent;
 import com.darkblade12.paintwar.arena.event.PlayerStopGameEvent;
 import com.darkblade12.paintwar.arena.region.Cuboid;
+import com.darkblade12.paintwar.data.DataManager;
 import com.darkblade12.paintwar.help.CommandDetails;
 import com.darkblade12.paintwar.sign.ArenaSign;
 import com.darkblade12.paintwar.stats.Stat;
-import com.darkblade12.paintwar.util.PlayerUtil;
 
 public class PaintWarCE implements CommandExecutor {
 	private PaintWar plugin;
@@ -35,7 +35,7 @@ public class PaintWarCE implements CommandExecutor {
 		}
 		Player p = sender instanceof Player ? (Player) sender : null;
 		String sub = args[0].toLowerCase();
-		CommandDetails cd = plugin.help.getCommand(sub);
+		CommandDetails cd = plugin.help.getCommand(sub + (sub.equals("top") ? " <won/lost/wl>" : ""));
 		if (cd == null) {
 			sender.sendMessage(help.getInvalidUsageString());
 			return true;
@@ -63,11 +63,10 @@ public class PaintWarCE implements CommandExecutor {
 				sender.sendMessage(plugin.message.arena_x(false));
 				return true;
 			}
-			String name = a.getName();
-			plugin.player.selectArena(p, name);
-			sender.sendMessage(plugin.message.arena_selected(name));
+			plugin.data.setSelectedArena(p, a);
+			sender.sendMessage(plugin.message.arena_selected(a.getName()));
 		} else if (sub.equals("wand")) {
-			if (!PlayerUtil.hasEnoughSpace(p, PaintWar.getWand())) {
+			if (!DataManager.hasEnoughSpace(p, PaintWar.getWand())) {
 				sender.sendMessage(plugin.message.player_not_enough_space());
 				return true;
 			}
@@ -76,7 +75,7 @@ public class PaintWarCE implements CommandExecutor {
 		} else if (sub.equals("set")) {
 			Arena a;
 			if (args.length == 2) {
-				a = plugin.player.getSelectedArena(p);
+				a = plugin.data.getSelectedArena(p);
 				if (a == null) {
 					sender.sendMessage(cd.getInvalidUsageString());
 					return true;
@@ -90,13 +89,13 @@ public class PaintWarCE implements CommandExecutor {
 			} else if (!a.isInEditMode()) {
 				sender.sendMessage(plugin.message.arena_not_in_edit_mode());
 				return true;
-			} else if (!plugin.player.hasSelectedBothPositions(p)) {
+			} else if (!plugin.data.isSelectionComplete(p)) {
 				sender.sendMessage(plugin.message.player_too_few_positions());
 				return true;
 			}
 			Cuboid region;
 			try {
-				region = new Cuboid(plugin.player.getPosition(p, true), plugin.player.getPosition(p, false));
+				region = plugin.data.getSelection(p);
 			} catch (Exception e) {
 				// this catch is useless since it's checked before if both positions aren't null
 				return true;
@@ -113,7 +112,7 @@ public class PaintWarCE implements CommandExecutor {
 		} else if (sub.equalsIgnoreCase("spawn")) {
 			Arena a;
 			if (args.length == 3) {
-				a = plugin.player.getSelectedArena(p);
+				a = plugin.data.getSelectedArena(p);
 				if (a == null) {
 					sender.sendMessage(cd.getInvalidUsageString());
 					return true;
@@ -154,7 +153,7 @@ public class PaintWarCE implements CommandExecutor {
 		} else if (sub.equals("check")) {
 			Arena a;
 			if (args.length == 1 && p != null) {
-				a = plugin.player.getSelectedArena(p);
+				a = plugin.data.getSelectedArena(p);
 				if (a == null) {
 					sender.sendMessage(cd.getInvalidUsageString());
 					return true;
@@ -173,7 +172,7 @@ public class PaintWarCE implements CommandExecutor {
 		} else if (sub.equals("edit")) {
 			Arena a;
 			if (args.length == 1 && p != null) {
-				a = plugin.player.getSelectedArena(p);
+				a = plugin.data.getSelectedArena(p);
 				if (a == null) {
 					sender.sendMessage(cd.getInvalidUsageString());
 					return true;
@@ -210,7 +209,7 @@ public class PaintWarCE implements CommandExecutor {
 			} else if (plugin.arena.hasJoinedArena(p)) {
 				sender.sendMessage(plugin.message.arena_x_joined(true));
 				return true;
-			} else if (a.requiresEmptyInventory() && !PlayerUtil.hasEmptyInventory(p)) {
+			} else if (a.requiresEmptyInventory() && !DataManager.hasEmptyInventory(p)) {
 				sender.sendMessage(plugin.message.player_inventory_not_empty());
 				return true;
 			} else if (a.isFull()) {

@@ -13,7 +13,9 @@ public class VaultUtil {
 	}
 
 	public static boolean isVaultEconomyInstalled() {
+		if (Bukkit.getServer().getPluginManager().getPlugin("Vault") == null)
+			return false;
 		RegisteredServiceProvider<Economy> rsp = Bukkit.getServer().getServicesManager().getRegistration(Economy.class);
-		return Bukkit.getServer().getPluginManager().getPlugin("Vault") != null && rsp != null && rsp.getProvider() != null;
+		return rsp != null && rsp.getProvider() != null;
 	}
 }

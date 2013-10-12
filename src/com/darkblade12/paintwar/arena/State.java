@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public enum State {
-	JOINABLE("Joinable"),
-	COUNTING("Counting..."),
-	NOT_JOINABLE("Not joinable");
+	JOINABLE("joinable"),
+	COUNTING("counting"),
+	NOT_JOINABLE("not_joinable");
 
 	private String name;
 	private static final Map<String, State> NAME_MAP = new HashMap<String, State>();

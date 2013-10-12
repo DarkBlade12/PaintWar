@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -25,23 +24,25 @@ import com.darkblade12.paintwar.arena.powerup.Powerup;
 import com.darkblade12.paintwar.arena.powerup.PowerupManager;
 import com.darkblade12.paintwar.arena.region.Cuboid;
 import com.darkblade12.paintwar.arena.region.Floor;
+import com.darkblade12.paintwar.arena.util.PaintColor;
+import com.darkblade12.paintwar.data.DataManager;
 import com.darkblade12.paintwar.loader.ConfigLoader;
 import com.darkblade12.paintwar.manager.MultipleTaskManager;
 import com.darkblade12.paintwar.message.MessageManager;
 import com.darkblade12.paintwar.stats.Stat;
 import com.darkblade12.paintwar.util.LocationUtil;
-import com.darkblade12.paintwar.util.PlayerUtil;
 
+// TODO look for alternative methods for the deprecated stuff ("getMaterial(int)" and "getData")
+
+@SuppressWarnings("deprecation")
 public class Arena extends MultipleTaskManager {
-	private final static Random rn = new Random();
-	private final static byte[] allColors = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 	private String name;
 	private ConfigLoader loader;
 	private YamlConfiguration config;
 	private boolean editMode;
 	private boolean requireEmptyInventory;
 	private boolean hungerDisabled;
-	private List<Integer> ignoredBlockIds;
+	private List<Material> ignoredMaterials;
 	private boolean commandsDisabled;
 	private String[] allowedCommands;
 	private int gameDuration;
@@ -51,6 +52,8 @@ public class Arena extends MultipleTaskManager {
 	private boolean automaticStartEnabled;
 	private int automaticStartPercent;
 	private int automaticStartPlayerAmount;
+	private boolean timeRemainingMessagesEnabled;
+	private List<Integer> timeRemainingMessagesTimeSchedule;
 	private boolean powerupsEnabled;
 	private PowerupManager powerupManager;
 	private boolean itemRewardsEnabled;
@@ -76,7 +79,7 @@ public class Arena extends MultipleTaskManager {
 		editMode = config.getBoolean("General_Settings.Edit_Mode");
 		requireEmptyInventory = config.getBoolean("General_Settings.Require_Empty_Inventory");
 		hungerDisabled = config.getBoolean("General_Settings.Hunger_Disabled");
-		ignoredBlockIds = new ArrayList<Integer>();
+		ignoredMaterials = new ArrayList<Material>();
 		String ignoredBlockIdsString = config.getString("General_Settings.Ignored_Block_Ids");
 		if (ignoredBlockIdsString != null)
 			for (String block : ignoredBlockIdsString.split(", "))
@@ -85,7 +88,7 @@ public class Arena extends MultipleTaskManager {
 					Material mat = Material.getMaterial(id);
 					if (mat == null || !mat.isBlock())
 						throw new Exception("Invalid block id '" + id + "' found in the list 'Ignored_Block_Ids'");
-					ignoredBlockIds.add(id);
+					ignoredMaterials.add(mat);
 				} catch (Exception e) {
 					throw new Exception("Invalid block id format '" + block + "' found in the list 'Ignored_Block_Ids'");
 				}
@@ -99,18 +102,34 @@ public class Arena extends MultipleTaskManager {
 		if (countdownAmount < 0)
 			throw new Exception("'Countdown' value has to be positive");
 		defaultBrushSize = config.getInt("Game_Settings.Default_Brush_Size");
-		if (defaultBrushSize <= 0)
+		if (defaultBrushSize < 0)
 			throw new Exception("'Default_Brush_Size' value has to be greater than 0");
 		mode = Mode.fromName(config.getString("Game_Settings.Mode"));
 		if (mode == null)
 			throw new Exception("'Mode' value can't be null");
 		automaticStartEnabled = config.getBoolean("Game_Settings.Automatic_Start.Enabled");
-		automaticStartPercent = config.getInt("Game_Settings.Automatic_Start.Percent");
-		if (automaticStartPercent <= 0)
-			throw new Exception("'Percent' value has to be greater than 0");
-		automaticStartPlayerAmount = config.getInt("Game_Settings.Automatic_Start.Player_Amount");
-		if (automaticStartPlayerAmount < 2)
-			throw new Exception("'Player_Amount' value has to be greater than 1");
+		if (automaticStartEnabled) {
+			automaticStartPercent = config.getInt("Game_Settings.Automatic_Start.Percent");
+			if (automaticStartPercent <= 0)
+				throw new Exception("'Percent' value has to be greater than 0");
+			automaticStartPlayerAmount = config.getInt("Game_Settings.Automatic_Start.Player_Amount");
+			if (automaticStartPlayerAmount < 2)
+				throw new Exception("'Player_Amount' value has to be greater than 1");
+		}
+		timeRemainingMessagesEnabled = config.getBoolean("Game_Settings.Time_Remaining_Messages.Enabled");
+		if (timeRemainingMessagesEnabled) {
+			timeRemainingMessagesTimeSchedule = new ArrayList<Integer>();
+			String timeScheduleString = config.getString("Game_Settings.Time_Remaining_Messages.Time_Schedule");
+			if (timeScheduleString != null)
+				for (String num : timeScheduleString.split(", "))
+					try {
+						int time = Integer.parseInt(num);
+						if (time < gameDuration)
+							timeRemainingMessagesTimeSchedule.add(Integer.parseInt(num));
+					} catch (Exception e) {
+						// invalid number is ignored
+					}
+		}
 		powerupsEnabled = config.getBoolean("Powerup_Settings.Powerups_Enabled");
 		if (powerupsEnabled) {
 			powerupManager = new PowerupManager(plugin, this);
@@ -126,17 +145,20 @@ public class Arena extends MultipleTaskManager {
 					int id = Integer.parseInt(s[0]);
 					int amount = s.length >= 2 ? Integer.parseInt(s[1]) : 1;
 					short durability = s.length == 3 ? Short.parseShort(s[2]) : 0;
-					if (Material.getMaterial(id) == null)
+					Material mat = Material.getMaterial(id);
+					if (mat == null)
 						throw new Exception("Invalid item id '" + id + "' found in the list 'Items'");
-					itemRewards.add(new ItemStack(id, amount, durability));
+					itemRewards.add(new ItemStack(mat, amount, durability));
 				} catch (Exception e) {
 					throw new Exception("Invalid item format '" + item + "' found in the list 'Items'");
 				}
 		moneyRewardEnabled = config.getBoolean("Reward_Settings.Money_Reward.Enabled");
-		moneyAmount = config.getDouble("Reward_Settings.Money_Reward.Money_Amount");
-		if (moneyAmount < 0)
-			throw new Exception("'Money_Amount' value has to be positive");
-		else if (!moneyRewardEnabled || plugin.vault == null)
+		if (moneyRewardEnabled) {
+			moneyAmount = config.getDouble("Reward_Settings.Money_Reward.Money_Amount");
+			if (moneyAmount < 0)
+				throw new Exception("'Money_Amount' value has to be positive");
+		}
+		if (!moneyRewardEnabled || plugin.vault == null)
 			moneyAmount = 0.0D;
 		spawns = new HashMap<String, Location>();
 		try {
@@ -155,7 +177,7 @@ public class Arena extends MultipleTaskManager {
 				throw new Exception("Failed to load the protection area");
 		}
 		try {
-			floor = new Floor(LocationUtil.parse(config.getString("Bounds.Floor.p1")), LocationUtil.parse(config.getString("Bounds.Floor.p2")), plugin, ignoredBlockIds);
+			floor = new Floor(LocationUtil.parse(config.getString("Bounds.Floor.p1")), LocationUtil.parse(config.getString("Bounds.Floor.p2")), plugin, ignoredMaterials);
 		} catch (Exception e) {
 			if (!editMode)
 				throw new Exception("Failed to load the protection area");
@@ -175,7 +197,7 @@ public class Arena extends MultipleTaskManager {
 		broadcastMessage(plugin.message.arena_disabled());
 		if (state != State.NOT_JOINABLE) {
 			for (Player p : getPlayers())
-				plugin.player.clean(p);
+				plugin.data.restoreDataBackup(p);
 			if (state == State.COUNTING)
 				this.cancelTasks();
 		} else {
@@ -203,11 +225,10 @@ public class Arena extends MultipleTaskManager {
 		List<String> exceptedNames = new ArrayList<String>();
 		for (Player p : excepted)
 			exceptedNames.add(p.getName());
-		if (players.size() == exceptedNames.size())
-			return;
-		for (Player p : getPlayers())
-			if (!exceptedNames.contains(p.getName()))
-				p.sendMessage(message);
+		if (players.size() != exceptedNames.size())
+			for (Player p : getPlayers())
+				if (!exceptedNames.contains(p.getName()))
+					p.sendMessage(message);
 	}
 
 	public void handleJoin(final Player p) {
@@ -215,17 +236,18 @@ public class Arena extends MultipleTaskManager {
 		e.call();
 		if (!e.isCancelled()) {
 			String name = p.getName();
-			players.add(name);
-			plugin.player.saveState(p);
 			String spawn = getRandomSpawn();
-			plugin.player.reserveSpawn(p, spawns.get(spawn), spawn);
-			plugin.player.blockMovement(p, true);
+			players.add(name);
+			plugin.data.createDataBackup(p);
+			plugin.data.setReservedSpawn(p, spawn);
+			plugin.data.setBlockMovement(p, true);
+			p.teleport(spawns.get(spawn));
 			String msg = plugin.message.arena_joined_other(name, this);
 			if (plugin.setting.BROADCAST_PLAYER_JOIN)
 				Bukkit.broadcastMessage(msg);
 			else
 				broadcastMessage(msg, p);
-			checkCountdownStart();
+			initiateCountdown();
 			update();
 		}
 	}
@@ -242,13 +264,13 @@ public class Arena extends MultipleTaskManager {
 			else
 				broadcastMessage(msg, p);
 			if (state != State.NOT_JOINABLE) {
-				plugin.player.clean(p);
+				plugin.data.restoreDataBackup(p);
 				if (state == State.COUNTING && players.size() < 2) {
 					cancelTasks();
 					broadcastMessage(plugin.message.arena_countdown_stopped());
 				}
 			} else {
-				plugin.player.clean(p);
+				plugin.data.restoreDataBackup(p);
 				plugin.stats.add(name, Stat.LOST_GAMES, 1);
 				if (players.size() < 2)
 					stopGame(true);
@@ -260,46 +282,45 @@ public class Arena extends MultipleTaskManager {
 
 	private boolean isCountdownStartable() {
 		int playerAmount = getPlayers().size();
-		if (!automaticStartEnabled || state != State.JOINABLE || playerAmount < 2)
+		if (!automaticStartEnabled || state != State.JOINABLE || playerAmount < 2 || playerAmount == automaticStartPlayerAmount
+				|| ((double) getReadyPlayers() / (double) playerAmount) * 100 >= automaticStartPercent)
 			return false;
-		if (playerAmount == automaticStartPlayerAmount || ((double) getReadyPlayers() / (double) playerAmount) * 100 >= automaticStartPercent)
-			return true;
 		return false;
 	}
 
-	public void checkCountdownStart() {
-		if (!isCountdownStartable())
-			return;
-		CountdownStartEvent e = new CountdownStartEvent(this);
-		e.call();
-		if (!e.isCancelled())
-			startCountdown();
+	public void initiateCountdown() {
+		if (isCountdownStartable()) {
+			CountdownStartEvent e = new CountdownStartEvent(this);
+			e.call();
+			if (!e.isCancelled())
+				startCountdown();
+		}
 	}
 
-	private void determineColors() {
-		byte[] colors = allColors.clone();
+	private void assignColors() {
+		PaintColor[] colors = PaintColor.values().clone();
 		int size = 16;
 		for (Player p : getPlayers()) {
-			int r = rn.nextInt(size);
-			plugin.player.setTrailColor(p, colors[r]);
+			int r = RANDOM.nextInt(size);
+			plugin.data.setPaintColor(p, colors[r]);
 			colors[r] = colors[size - 1];
-			colors[size - 1] = -1;
+			colors[size - 1] = null;
 			size--;
 		}
 	}
 
-	private void determineBrushSizes() {
+	private void assignBrushSizes() {
 		for (Player p : getPlayers())
-			plugin.player.setBrushSize(p, defaultBrushSize);
+			plugin.data.setBrushSize(p, defaultBrushSize);
 	}
 
 	public void startGame() {
 		new GameStartEvent(this).call();
 		floor.createBackup();
-		determineColors();
-		determineBrushSizes();
+		assignColors();
+		assignBrushSizes();
 		for (Player p : getPlayers())
-			plugin.player.blockMovement(p, false);
+			plugin.data.setBlockMovement(p, false);
 		if (powerupsEnabled)
 			powerupManager.startTasks();
 		scheduleTask(new Runnable() {
@@ -308,6 +329,7 @@ public class Arena extends MultipleTaskManager {
 				stopGame(false);
 			}
 		}, gameDuration * 20);
+		startMessageTasks();
 		cancelTask(getTask(0)); // cancel scheduler task (it's the first task created)
 		state = State.NOT_JOINABLE;
 		update();
@@ -329,6 +351,17 @@ public class Arena extends MultipleTaskManager {
 			}
 		}, 0, 20);
 		update();
+	}
+
+	private void startMessageTasks() {
+		for (final int seconds : timeRemainingMessagesTimeSchedule) {
+			scheduleTask(new Runnable() {
+				@Override
+				public void run() {
+					broadcastMessage(plugin.message.arena_time_remaining(gameDuration - seconds));
+				}
+			}, seconds * 20);
+		}
 	}
 
 	public void activatePowerup(Player p, Powerup pow) {
@@ -355,7 +388,7 @@ public class Arena extends MultipleTaskManager {
 			String name = p.getName();
 			players.remove(name);
 			plugin.stats.add(name, name.equals(winnerName) ? Stat.WON_GAMES : Stat.LOST_GAMES, 1);
-			plugin.player.clean(p);
+			plugin.data.restoreDataBackup(p);
 			new PlayerLeaveArenaEvent(p, this).call();
 		}
 		if (!winnerName.equals("None"))
@@ -365,16 +398,73 @@ public class Arena extends MultipleTaskManager {
 		update();
 	}
 
+	public void distributeRewards(Player p) {
+		if (itemRewardsEnabled)
+			for (ItemStack i : itemRewards)
+				if (DataManager.hasEnoughSpace(p, i))
+					p.getInventory().addItem(i);
+				else
+					p.getWorld().dropItemNaturally(p.getLocation(), i);
+		if (moneyRewardEnabled && plugin.vault != null)
+			plugin.vault.eco.depositPlayer(p.getName(), moneyAmount);
+	}
+
+	public void setFloor(Cuboid region) {
+		config.set("Bounds.Floor.p1", LocationUtil.parse(region.getUpperSW()));
+		config.set("Bounds.Floor.p2", LocationUtil.parse(region.getLowerNE()));
+		loader.saveConfig(config);
+		try {
+			floor = new Floor(region.getUpperSW(), region.getLowerNE(), plugin, ignoredMaterials);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void setProtection(Cuboid region) {
+		config.set("Bounds.Protection.p1", LocationUtil.parse(region.getUpperSW()));
+		config.set("Bounds.Protection.p2", LocationUtil.parse(region.getLowerNE()));
+		loader.saveConfig(config);
+		protection = region;
+	}
+
+	public void addSpawn(String name, Location loc) {
+		config.set("Spawns." + name, LocationUtil.parse(loc, true));
+		loader.saveConfig(config);
+		spawns.put(name, loc);
+	}
+
+	public void deleteSpawn(String name) {
+		config.set("Spawns." + name, null);
+		loader.saveConfig(config);
+		spawns.remove(name);
+	}
+
+	public void switchEditMode() {
+		editMode = !editMode;
+		config.set("General_Settings.Edit_Mode", editMode);
+		loader.saveConfig(config);
+	}
+
+	@Override
+	public void cancelTasks() {
+		super.cancelTasks();
+		powerupManager.cancelTasks();
+		powerupManager.clearHandlers();
+	}
+
+	public void update() {
+		plugin.arena.updateArena(this);
+	}
+
 	private Player getWinner() {
 		Map<String, Integer> pointMap = new HashMap<String, Integer>();
-		Map<Byte, String> colorMap = new HashMap<Byte, String>();
+		Map<PaintColor, String> colorMap = new HashMap<PaintColor, String>();
 		for (Player p : getPlayers())
-			colorMap.put(plugin.player.getTrailColor(p), p.getName());
-		for (Entry<Byte, Integer> e : floor.getWoolDataMap().entrySet()) {
+			colorMap.put(plugin.data.getPaintColor(p), p.getName());
+		for (Entry<PaintColor, Integer> e : floor.getColorMap().entrySet()) {
 			String name = colorMap.get(e.getKey());
-			if (name == null)
-				continue;
-			pointMap.put(colorMap.get(e.getKey()), e.getValue());
+			if (name != null)
+				pointMap.put(colorMap.get(e.getKey()), e.getValue());
 		}
 		int highest = -1;
 		String winnerName = "None";
@@ -386,7 +476,7 @@ public class Arena extends MultipleTaskManager {
 			}
 		}
 		StringBuilder builder = new StringBuilder();
-		int blocks = floor.getBlockCount();
+		int blocks = floor.getVolume();
 		for (Entry<String, Integer> e : pointMap.entrySet()) {
 			String name = e.getKey();
 			builder.append("\n§r " + MessageManager.coloredArrow() + " " + (name.equals(winnerName) ? "§e" : "§6") + "§l" + name + ": §8§l" + getPercentage(e.getValue(), blocks) + "%");
@@ -400,28 +490,6 @@ public class Arena extends MultipleTaskManager {
 		return (int) percentage;
 	}
 
-	public void distributeRewards(Player p) {
-		if (itemRewardsEnabled)
-			for (ItemStack i : itemRewards)
-				if (PlayerUtil.hasEnoughSpace(p, i))
-					p.getInventory().addItem(i);
-				else
-					p.getWorld().dropItemNaturally(p.getLocation(), i);
-		if (moneyRewardEnabled && plugin.vault != null)
-			plugin.vault.eco.depositPlayer(p.getName(), moneyAmount);
-	}
-
-	@Override
-	public void cancelTasks() {
-		super.cancelTasks();
-		powerupManager.cancelTasks();
-		powerupManager.clearTasks();
-	}
-
-	public void update() {
-		plugin.arena.updateArena(this);
-	}
-
 	public String getPlayerDisplay() {
 		int spawns = this.spawns.size();
 		int players = this.players.size();
@@ -431,7 +499,7 @@ public class Arena extends MultipleTaskManager {
 	private List<String> getFreeSpawns() {
 		List<String> usedSpawns = new ArrayList<String>();
 		for (Player p : getPlayers())
-			usedSpawns.add(plugin.player.getReservedSpawn(p));
+			usedSpawns.add(plugin.data.getReservedSpawn(p));
 		List<String> freeSpawns = new ArrayList<String>();
 		for (String spawn : spawns.keySet())
 			if (!usedSpawns.contains(spawn))
@@ -441,7 +509,7 @@ public class Arena extends MultipleTaskManager {
 
 	private String getRandomSpawn() {
 		List<String> freeSpawns = getFreeSpawns();
-		return freeSpawns.get(rn.nextInt(freeSpawns.size()));
+		return freeSpawns.get(RANDOM.nextInt(freeSpawns.size()));
 	}
 
 	public boolean isFull() {
@@ -451,7 +519,7 @@ public class Arena extends MultipleTaskManager {
 	public int getReadyPlayers() {
 		int ready = 0;
 		for (Player p : getPlayers())
-			if (plugin.player.isReady(p))
+			if (plugin.data.isReady(p))
 				ready++;
 		return ready;
 	}
@@ -520,36 +588,6 @@ public class Arena extends MultipleTaskManager {
 		return this.protection;
 	}
 
-	public void setFloor(Cuboid region) {
-		config.set("Bounds.Floor.p1", LocationUtil.parse(region.getUpperSW()));
-		config.set("Bounds.Floor.p2", LocationUtil.parse(region.getLowerNE()));
-		loader.saveConfig(config);
-		try {
-			floor = new Floor(region.getUpperSW(), region.getLowerNE(), plugin, ignoredBlockIds);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void setProtection(Cuboid region) {
-		config.set("Bounds.Protection.p1", LocationUtil.parse(region.getUpperSW()));
-		config.set("Bounds.Protection.p2", LocationUtil.parse(region.getLowerNE()));
-		loader.saveConfig(config);
-		protection = region;
-	}
-
-	public void addSpawn(String name, Location loc) {
-		config.set("Spawns." + name, LocationUtil.parse(loc, true));
-		loader.saveConfig(config);
-		spawns.put(name, loc);
-	}
-
-	public void deleteSpawn(String name) {
-		config.set("Spawns." + name, null);
-		loader.saveConfig(config);
-		spawns.remove(name);
-	}
-
 	public int getSpawnAmount() {
 		return spawns.size();
 	}
@@ -559,12 +597,6 @@ public class Arena extends MultipleTaskManager {
 			if (e.getKey().equalsIgnoreCase(name))
 				return true;
 		return false;
-	}
-
-	public void switchEditMode() {
-		editMode = !editMode;
-		config.set("General_Settings.Edit_Mode", editMode);
-		loader.saveConfig(config);
 	}
 
 	public boolean isReadyForUse() {

@@ -12,19 +12,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.darkblade12.paintwar.arena.ArenaManager;
 import com.darkblade12.paintwar.command.PaintWarCE;
+import com.darkblade12.paintwar.data.DataManager;
 import com.darkblade12.paintwar.help.HelpPageManager;
 import com.darkblade12.paintwar.message.MessageManager;
 import com.darkblade12.paintwar.sign.SignManager;
 import com.darkblade12.paintwar.stats.StatsManager;
-import com.darkblade12.paintwar.util.PlayerUtil;
 import com.darkblade12.paintwar.util.VaultUtil;
 
 public class PaintWar extends JavaPlugin {
 	public static final String PREFIX = "§8§l[§a§oPaint§4§oWar§8§l] §r";
 	public Logger l;
 	public Configuration config;
-	public PlayerUtil player;
 	public VaultUtil vault;
+	public DataManager data;
 	public SettingManager setting;
 	public HelpPageManager help;
 	public ArenaManager arena;
@@ -35,6 +35,7 @@ public class PaintWar extends JavaPlugin {
 	public void onEnable() {
 		l = getLogger();
 		loadConfig();
+		data = new DataManager(this);
 		setting = new SettingManager(this);
 		arena = new ArenaManager(this);
 		message = new MessageManager(this);
@@ -46,7 +47,6 @@ public class PaintWar extends JavaPlugin {
 		}
 		help = new HelpPageManager(this, message.help_page_header(getDescription().getVersion()), "§8[§bPage <current_page> §7of §6§l<page_amount>§8]",
 				"<random_color>\u2756 §6§o/<command> §r\u268A §2<description>\n§r  §d\u2756 §5§oExecutable as Console: <console_check>\n§r  §7\u2756 §8§oPermission: §7<permission>", 5);
-		player = new PlayerUtil(this);
 		checkForVault();
 		new PaintWarCE(this);
 		l.info("Game system has been successfully enabled!");

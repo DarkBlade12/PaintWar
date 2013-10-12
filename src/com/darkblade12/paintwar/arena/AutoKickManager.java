@@ -43,7 +43,7 @@ public class AutoKickManager extends SingleTaskManager implements Listener {
 					Player p = Bukkit.getPlayerExact(name);
 					Location loc = p.getLocation();
 					int s = idleSeconds.get(name);
-					if (LocationUtil.noDistance(loc, lastLocation.get(name)) && !plugin.player.isMovementBlocked(p)) {
+					if (LocationUtil.noDistance(loc, lastLocation.get(name)) && !plugin.data.getBlockMovement(p)) {
 						s++;
 						idleSeconds.put(name, s);
 					} else {
