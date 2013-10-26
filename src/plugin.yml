@@ -1,8 +1,8 @@
 name: PaintWar
-version: 1.0.2
+version: 1.0.3_Dev
 author: DarkBlade12
 website: http://dev.bukkit.org/profiles/DarkBladee12
-softdepend: [Vault, Multiworld, MyWorlds, Multiverse]
+softdepend: [Vault, Multiworld, MyWorlds, Multiverse-Core]
 
 main: com.darkblade12.paintwar.PaintWar
 

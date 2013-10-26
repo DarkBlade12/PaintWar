@@ -1,6 +1,8 @@
 package com.darkblade12.paintwar.arena.region;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -9,8 +11,9 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 
 public class Cuboid implements Iterable<Block> {
-	protected int x1, y1, z1, x2, y2, z2;
 	protected String worldName;
+	protected int x1, y1, z1;
+	protected int x2, y2, z2;
 
 	public Cuboid(Location l1, Location l2) throws Exception {
 		if (l1 == null || l2 == null)
@@ -34,41 +37,46 @@ public class Cuboid implements Iterable<Block> {
 		int x = loc.getBlockX();
 		int y = loc.getBlockY();
 		int z = loc.getBlockZ();
-		if (x >= x1 && x <= x2)
-			if (y >= y1 && y <= y2)
-				if (z >= z1 && z <= z2)
-					return true;
-		return false;
+		return x >= x1 && x <= x2 && y >= y1 && y <= y2 && z >= z1 && z <= z2;
 	}
 
-	public void setBlocks(Material mat) {
+	public void setBlocks(Material material) {
+		if (material.isBlock())
+			throw new IllegalArgumentException("'" + material.name() + "' isn't a valid block material");
 		for (Block b : this)
-			b.setType(mat);
+			b.setType(material);
 	}
-	
-	public boolean reachedHorizontalBorder(Location loc) {
+
+	public boolean hasReachedHorizontalBorder(Location loc) {
 		int x = loc.getBlockX();
 		int z = loc.getBlockZ();
 		return x == x1 || x == x2 || z == z1 || z == z2;
 	}
 
-	public Location getHorizontalMirrorLocation(Location loc) {
-		int x = loc.getBlockX();
-		int z = loc.getBlockZ();
-		boolean xBorder = x == x1 || x == x2;
-		boolean x1Border = xBorder ? x == x1 : false;
-		boolean zBorder = z == z1 || z == z2;
-		boolean z1Border = zBorder ? z == z1 : false;
-		if (xBorder)
-			loc.setX(x1Border ? x2 : x1 + 1);
-		if (zBorder)
-			loc.setZ(z1Border ? z2 : z1 + 1);
-		return loc;
+	public List<Block> getBlocks() {
+		World world = getWorld();
+		List<Block> blocks = new ArrayList<Block>();
+		for (int x = x1; x <= x2; x++)
+			for (int z = z1; z <= z2; z++)
+				for (int y = y1; y <= y2; y++)
+					blocks.add(world.getBlockAt(x, y, z));
+		return blocks;
+	}
 
+	public int getSizeX() {
+		return (x2 - x1) + 1;
+	}
+
+	public int getSizeY() {
+		return (y2 - y1) + 1;
+	}
+
+	public int getSizeZ() {
+		return (z2 - z1) + 1;
 	}
 
 	public int getVolume() {
-		return ((x2 - x1) + 1) * ((y2 - y1) + 1) * ((z2 - z1) + 1);
+		return getSizeX() * getSizeY() * getSizeZ();
 	}
 
 	public Location getLowerNE() {
@@ -86,49 +94,22 @@ public class Cuboid implements Iterable<Block> {
 		return world;
 	}
 
-	@Override
-	public Iterator<Block> iterator() {
-		return new CuboidIterator(getWorld(), x1, y1, z1, x2, y2, z2);
+	public Location getHorizontalMirrorLocation(Location loc) {
+		int x = loc.getBlockX();
+		int z = loc.getBlockZ();
+		boolean xBorder = x == x1 || x == x2;
+		boolean x1Border = xBorder ? x == x1 : false;
+		boolean zBorder = z == z1 || z == z2;
+		boolean z1Border = zBorder ? z == z1 : false;
+		if (xBorder)
+			loc.setX(x1Border ? x2 : x1 + 1);
+		if (zBorder)
+			loc.setZ(z1Border ? z2 : z1 + 1);
+		return loc;
 	}
 
-	private class CuboidIterator implements Iterator<Block> {
-		private World w;
-		private int baseX, baseY, baseZ;
-		private int x, y, z;
-		private int sizeX, sizeY, sizeZ;
-
-		public CuboidIterator(World w, int x1, int y1, int z1, int x2, int y2, int z2) {
-			this.w = w;
-			baseX = x1;
-			baseY = y1;
-			baseZ = z1;
-			sizeX = Math.abs(x2 - x1) + 1;
-			sizeY = Math.abs(y2 - y1) + 1;
-			sizeZ = Math.abs(z2 - z1) + 1;
-			x = this.y = this.z = 0;
-		}
-
-		@Override
-		public boolean hasNext() {
-			return x < sizeX && y < sizeY && z < sizeZ;
-		}
-
-		@Override
-		public Block next() {
-			Block b = this.w.getBlockAt(baseX + x, baseY + y, baseZ + z);
-			if (++x >= sizeX) {
-				x = 0;
-				if (++y >= this.sizeY) {
-					y = 0;
-					++z;
-				}
-			}
-			return b;
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException("This operation is not available on the type CuboidIterator");
-		}
+	@Override
+	public Iterator<Block> iterator() {
+		return getBlocks().iterator();
 	}
 }

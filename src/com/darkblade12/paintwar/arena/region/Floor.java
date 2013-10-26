@@ -113,10 +113,10 @@ public class Floor extends Cuboid {
 				colorBlock(b, color);
 			return;
 		}
-		int sqr = r ^ 2;
+		int sqr = r * r;
 		for (int x = cX - r; x <= cX + r; x++)
 			for (int z = cZ - r; z <= cZ + r; z++)
-				if (((cX - x) ^ 2 + (cZ - z) ^ 2) <= sqr) {
+				if ((cX - x) * (cX - x) + (cZ - z) * (cZ - z) <= sqr) {
 					Block b = world.getBlockAt(x, cY, z);
 					if (eraser)
 						eraseColor(b);

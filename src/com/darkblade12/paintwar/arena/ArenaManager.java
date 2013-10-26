@@ -180,7 +180,7 @@ public class ArenaManager extends Manager implements Listener {
 			return;
 		if (plugin.data.hasNoBorders(p)) {
 			Cuboid floor = a.getFloor();
-			if (floor.reachedHorizontalBorder(t))
+			if (floor.hasReachedHorizontalBorder(t))
 				p.teleport(floor.getHorizontalMirrorLocation(t));
 		}
 		a.getFloor().colorTrace(p);

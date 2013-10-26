@@ -2,6 +2,7 @@ package com.darkblade12.paintwar.sign;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
@@ -88,10 +89,7 @@ public class ArenaSign {
 						playersScrolling = true;
 						textPosition = 0;
 					}
-					StringBuilder builder = new StringBuilder();
-					for (int b = 0; b < players.size(); b++)
-						builder.append(players.get(i) + ", ");
-					String list = builder.toString();
+					String list = StringUtils.join(players, ", ");
 					text = scrollFurther(list.length() < 14 ? list.substring(0, list.length() - 2) : list);
 				}
 			} else if (i == 1) {

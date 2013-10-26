@@ -69,7 +69,7 @@ public class HelpPageManager extends Manager {
 			helpPage += "\n§r" + visibleCommands.get(i).getHelpPageString(commandDetailsLabel);
 		}
 		int pages = getHelpPageAmount(s);
-		s.sendMessage((pageHeader == null ? "" : pageHeader) + helpPage
+		s.sendMessage((pageHeader == null ? "" : pageHeader.replace("<version>", plugin.getDescription().getVersion())) + helpPage
 				+ (pageFooter == null ? "" : "\n§r" + pageFooter.replace("<current_page>", (page == pages ? "§6§l" : "§a§l") + page).replace("<page_amount>", pages + "")));
 	}
 

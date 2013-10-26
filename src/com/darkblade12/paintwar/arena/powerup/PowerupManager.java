@@ -134,8 +134,10 @@ public class PowerupManager extends MultipleTaskManager {
 
 	public void removeTasks(String name, Powerup p) {
 		TaskHandler handler = handlers.get(name);
-		handler.removeTasks(p);
-		handlers.put(name, handler);
+		if (handler != null) {
+			handler.removeTasks(p);
+			handlers.put(name, handler);
+		}
 	}
 
 	public void clearHandlers() {

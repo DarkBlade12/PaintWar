@@ -282,9 +282,10 @@ public class Arena extends MultipleTaskManager {
 
 	private boolean isCountdownStartable() {
 		int playerAmount = getPlayers().size();
-		if (!automaticStartEnabled || state != State.JOINABLE || playerAmount < 2 || playerAmount == automaticStartPlayerAmount
-				|| ((double) getReadyPlayers() / (double) playerAmount) * 100 >= automaticStartPercent)
+		if (!automaticStartEnabled || state != State.JOINABLE || playerAmount < 2)
 			return false;
+		else if (playerAmount == automaticStartPlayerAmount || ((double) getReadyPlayers() / (double) playerAmount) * 100 >= automaticStartPercent)
+			return true;
 		return false;
 	}
 
