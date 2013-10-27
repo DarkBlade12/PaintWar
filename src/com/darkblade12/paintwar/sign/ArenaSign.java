@@ -13,7 +13,7 @@ import com.darkblade12.paintwar.arena.State;
 import com.darkblade12.paintwar.util.LocationUtil;
 
 public class ArenaSign {
-	public final static String HEADER = "§aPaint§4War";
+	public final static String HEADER = "Â§6[Â§cPaintWarÂ§6]";
 	private PaintWar plugin;
 	private String id;
 	private Location location;
@@ -94,12 +94,12 @@ public class ArenaSign {
 				}
 			} else if (i == 1) {
 				String d = a.getPlayerDisplay();
-				text = d.substring(2, d.length() - 3) + "§r}";
+				text = d.substring(2, d.length() - 3) + "ï¿½r}";
 			} else if (i == 2) {
 				State st = a.getState();
-				text = (st == State.JOINABLE ? "§a" : st == State.COUNTING ? "§6" : "§4") + plugin.message.getMessage("state_" + st.getName());
+				text = (st == State.JOINABLE ? "ï¿½a" : st == State.COUNTING ? "ï¿½6" : "ï¿½4") + plugin.message.getMessage("state_" + st.getName());
 			} else {
-				text = "§8" + a.getMode().getName();
+				text = "ï¿½8" + a.getMode().getName();
 			}
 			s.setLine(position, text);
 		}
@@ -109,10 +109,10 @@ public class ArenaSign {
 
 	private String scrollFurther(String text) {
 		if (text.length() < 14) {
-			return "§e" + text;
+			return "ï¿½e" + text;
 		}
 		int e = textPosition + 14;
-		String f = "§e" + (e > text.length() ? text.substring(textPosition, text.length()) + text.substring(0, 14 - (text.length() - textPosition)) : text.substring(textPosition, e));
+		String f = "ï¿½e" + (e > text.length() ? text.substring(textPosition, text.length()) + text.substring(0, 14 - (text.length() - textPosition)) : text.substring(textPosition, e));
 		textPosition++;
 		if (textPosition == text.length())
 			textPosition = 0;
